@@ -37,7 +37,7 @@ return new class extends Migration
             $table->bigInteger('id_puebloindigena')->unsigned();
             $table->String('clave_grupo');
             $table->BigInteger('id')->unsigned();
-            
+            $table->boolean('servicio_estatus')->default(false); 
             $table->foreign('estado_nacimiento')->references('id_estado')->on('estados');
             $table->foreign('id_direccion')->references('id_direccion')->on('direcciones');
             $table->foreign('id_tiposangre')->references('id_tiposangre')->on('tipo_sangres');
@@ -46,7 +46,6 @@ return new class extends Migration
             $table->foreign('id_puebloindigena')->references('id_puebloindigena')->on('pueblos_indigenas');
             $table->foreign('clave_grupo')->references('clave_grupo')->on('grupos');
             $table->foreign('id')->references('id')->on('users');
-
             $table->softDeletes();
             $table->timestamps(false);
         });
