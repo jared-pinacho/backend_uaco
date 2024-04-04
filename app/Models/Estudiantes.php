@@ -14,7 +14,7 @@ class Estudiantes extends Model
     protected $table = 'estudiantes';
     protected $primaryKey = 'matricula';
     protected $fillable = ['nombre','apellido_paterno','apellido_materno','edad','curp','sexo','estado_nacimiento','fecha_nacimiento','nivel_educativo','telefono','telefono_emergencia',
-    'id_direccion','id_nacionalidad','id_tiposangre','padecimiento','discapacidad','regular','semestre','estatus','creditos_acumulados','id_lenguaindigena','id_puebloindigena','clave_grupo','id'];
+    'id_direccion','id_nacionalidad','id_tiposangre','padecimiento','discapacidad','regular','semestre','estatus','creditos_acumulados','id_lenguaindigena','id_puebloindigena','clave_grupo','id','servicio_estatus'];
     
     protected $casts = [
         'matricula' => 'string', 
@@ -69,4 +69,9 @@ class Estudiantes extends Model
     {
         return $this->hasOne(estadoDocumentacion::class, 'matricula');
     }
+
+    public function servicio()
+{
+    return $this->hasOne(Servicio::class, 'matricula_escolar', 'matricula');
+}
 }

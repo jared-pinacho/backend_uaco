@@ -104,6 +104,7 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
 
     Route::get('/estudiantes', [EstudiantesController::class, 'index']);
     Route::get('/estudiantes/{id}', [EstudiantesController::class, 'show']);
+    Route::get('/estudiante/{id}', [EstudiantesController::class, 'showEstudiante']);
 
     Route::get('/periodos', [PeriodosController::class, 'index']);
     Route::get('/periodos/{id}', [PeriodosController::class, 'show']);
@@ -241,6 +242,10 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::post('/escolar/clases/estudiantes/calificacion', [ClasesController::class, 'calificarEstudiantesPorEscolar']);
     Route::get('/escolares/clases/{claveClase}/estudiantes', [ClasesController::class, 'estudiantesPorClase']);
     Route::put('/documentacion/{claveEstudiante}', [EstadoDocumentacionController::class, 'update']);
+
+
+
+
 });
 
 Route::middleware(['auth:sanctum', 'checkFacilitadorRole'])->group(function () {

@@ -310,10 +310,7 @@ class EstudiantesController extends Controller
         } catch (ModelNotFoundException $e) {
             return ApiResponses::error('Error: ' . $e->getMessage(), 404);
         }
-    }
-
-
-    /**
+    }  /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $idEstudiante)
@@ -602,7 +599,6 @@ class EstudiantesController extends Controller
             return ApiResponses::error('Error: ' . $e->getMessage(), 500);
         }
     }
-
     public function totEstudiantes()
     {
         try {

@@ -48,4 +48,24 @@ class Escolares extends Model
         return $this->belongsTo(Estados::class, 'estado_nacimiento', 'id_estado');
         //primer clave del otro modelo, y segunda clave de este modelo
     }
+
+
+    public function foraneos()
+{
+    return $this->hasMany(Foraneo::class, 'matricula', 'id_foraneo');
+}
+
+
+public function servicios()
+{
+    return $this->hasMany(Servicio::class, 'matricula', 'id_servicio');
+}
+
+public function anuncios()
+{
+    return $this->hasMany(Anuncio::class, 'matricula', 'id_anuncio');
+}
+
+
+
 }

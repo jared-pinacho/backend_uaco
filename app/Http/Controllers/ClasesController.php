@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use App\Http\Responses\ApiResponses;
 use App\Models\Clases;
 use App\Models\Dias;
 use App\Models\ClaseEstudiante;
 use App\Models\Cucs;
+use App\Models\User;
 use App\Models\Carreras;
 use App\Models\Materias;
 use App\Models\Grupos;
@@ -18,6 +19,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Clase_estudiantes;
 use App\Models\Periodos;
+use App\Mail\ContactoMailable;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+
 
 class ClasesController extends Controller
 {
@@ -297,6 +302,14 @@ class ClasesController extends Controller
             $estudiantesData = $request->estudiantes;
 
             $gradoCarrera = $clase->carrera->grado;
+            $claveCarrera = $clase->clave_carrera;
+
+            $carrera = Carreras::findOrFail($claveCarrera);
+            $creditosCarrera = $carrera->creditos;
+
+
+
+
     
             // Verificar si la clase ya está calificada
             if ($clase->status_facilitador) {
@@ -336,6 +349,25 @@ class ClasesController extends Controller
                         'creditos_acumulados' => $estudiante->creditos_acumulados + $clase->materia->creditos,
                     ]);
                 }
+
+                $acumulados=$estudiante->creditos_acumulados;
+                if((($acumulados * 100) / $creditosCarrera) >= 70){
+
+                    $id=$estudiante->id;
+
+                    $user = User::findOrFail($id);
+
+                    $correo = $user->email;
+               
+
+                    Mail::to( $correo)
+                        ->send(new ContactoMailable);
+
+                    $estudiante->update([
+                        'servicio_estatus' => true,
+                    ]);                            
+                }
+
             }
     
             $clase->update(['status_facilitador' => true]);

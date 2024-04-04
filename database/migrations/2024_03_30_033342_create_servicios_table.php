@@ -28,6 +28,8 @@ return new class extends Migration
             $table->string('horas',4);
             $table->string('matricula');
             $table->string('matricula_escolar')->nullable();
+            $table->boolean('estatus')->default(false);
+            $table->string('coemntario',100)->nullable();
 
 
             $table->foreign('matricula_escolar')->references('matricula')->on('escolares');

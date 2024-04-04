@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id_anuncio');
             $table->string('titulo',50);
             $table->string('descripcion',150);
+            $table->string('fecha',30);
             $table->string('matricula');
 
 
