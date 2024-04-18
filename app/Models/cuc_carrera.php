@@ -8,4 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class cuc_carrera extends Model
 {
     use HasFactory;
+
+    protected $table = 'cuc_carrera';
+
 }

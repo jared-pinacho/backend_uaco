@@ -53,4 +53,16 @@ class PueblosIndigenasController extends Controller
     {
         //
     }
+
+    public function regresaPueblo()
+    {
+        try {
+            $pueblos = PueblosIndigenas::all();
+            return ApiResponses::success('Lista de pueblos indigenas', 200, $pueblos);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
 }

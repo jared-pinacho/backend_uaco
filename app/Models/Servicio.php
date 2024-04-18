@@ -9,17 +9,23 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Servicio extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+   
 
     protected $table = 'servicios';
 
     protected $primaryKey = 'id_servicio';
 
-    protected $fillable = ['modalidad', 'tipo_dep', 'nombre_dep', 'titular_dep', 'cargo_tit', 'grado_tit', 'responsable', 'programa', 'actividad', 'fecha_ini', 'fecha_fin', 'horas', 'matricula_estudiante','estatus','comentario'];
+    protected $fillable = ['modalidad', 'tipo_dep', 'nombre_dep', 'titular_dep', 'cargo_tit', 'grado_tit', 'responsable', 'programa', 'actividad', 'fecha_ini', 'fecha_fin', 'horas', 'matricula','matricula_escolar','estatus','estatus_envio','comentario', 'id_direccion'];
 
     protected $casts = [
         'id_servicio' => 'string'
     ];
+
+
+    public function direccion()
+    {
+        return $this->belongsTo(Direcciones::class, 'id_direccion','id_direccion');
+    }
 
 
     public function faseUno()
@@ -50,12 +56,12 @@ class Servicio extends Model
     
     public function estudiantes()
     {
-        return $this->belongsTo(Estudiantes::class, 'matricula_estudiante', 'matricula');
+        return $this->belongsTo(Estudiantes::class, 'matricula', 'matricula');
     }
 
     public function escolares()
 {
-    return $this->belongsTo(Escolares::class, 'id_servicio', 'matricula');
+    return $this->belongsTo(Escolares::class, 'id_servicio', 'matricula_escolar');
 }
 
 }

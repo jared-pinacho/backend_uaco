@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Responses\ApiResponses;
 use App\Models\CodigoPostal;
 use App\Models\Colonia;
+use App\Models\cuc_carrera;
 use App\Models\Cucs;
 use App\Models\Direcciones;
 use App\Models\Estados;
@@ -235,18 +236,18 @@ class CucsController extends Controller
             if ($rol === 'consejero') {
                 // Obtener la clave_cuc del consejero
                 $claveCuc = $usuarioConsejero->consejero->clave_cuc;
-            }else if($rol === 'escolar'){
+            } else if ($rol === 'escolar') {
                 $claveCuc = $usuarioConsejero->escolar->clave_cuc;
             }
-                // Obtener el CUC correspondiente a la clave_cuc del consejero
-                $cuc = Cucs::where('clave_cuc', $claveCuc)->first();
+            // Obtener el CUC correspondiente a la clave_cuc del consejero
+            $cuc = Cucs::where('clave_cuc', $claveCuc)->first();
 
-                if ($cuc) {
-                    // Obtener las carreras asociadas al CUC
-                    $carrerasAsociadas = $cuc->carreras;
+            if ($cuc) {
+                // Obtener las carreras asociadas al CUC
+                $carrerasAsociadas = $cuc->carreras;
 
-                    return ApiResponses::success('Lista de Carreras de Cuc', 200, $carrerasAsociadas);
-                }
+                return ApiResponses::success('Lista de Carreras de Cuc', 200, $carrerasAsociadas);
+            }
             // }
 
             // return ApiResponses::error('Acceso no autorizado', 403);
@@ -257,6 +258,55 @@ class CucsController extends Controller
         }
     }
 
+
+    public function regresaCarrerasPorCuc(Request $request)
+    {
+        try {
+            // Verificar si el usuario autenticado es un consejero
+            $usuario = auth()->user();
+            $iduser=$usuario->id;
+
+            $estudiante = Estudiantes::where('id', $iduser)->first();
+
+           $claveGrupo = $estudiante->clave_grupo;
+
+        //   $claveCarrera = Grupos::where('id', $iduser)->first();
+          
+           $grupo = Grupos::findOrFail($claveGrupo);
+
+          $claveCarrera=$grupo->clave_carrera;
+
+          $carrera = cuc_carrera::where('clave_carrera',$claveCarrera)->first() ;
+
+          $claveCuc=$carrera->clave_cuc;
+
+            
+            $cuc = Cucs::where('clave_cuc', $claveCuc)->first();
+
+            if ($cuc) {
+                // Obtener las carreras asociadas al CUC
+                $carrerasAsociadas = $cuc->carreras;
+
+                return ApiResponses::success('Lista de Carreras de Cuc', 200, $carrerasAsociadas);
+            }
+            // }
+
+            // return ApiResponses::error('Acceso no autorizado', 403);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('No encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+
+
+
+
+
+
     public function facilitadoresPorCucDeConsejero(Request $request)
     {
         try {
@@ -264,8 +314,8 @@ class CucsController extends Controller
             $claveCucConsejero = $usuarioConsejero->consejero->clave_cuc;
             $cuc = Cucs::findOrFail($claveCucConsejero);
             // $facilitadoresAsociadas = $cuc->facilitadores()->with('usuario.rol')->get();
-            $facilitadoresAsociados = $cuc->facilitadores()->with('usuario.rol', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado','tiposangre','nacionalidad', 'estado')
-            ->selectRaw('*,CONCAT(nombre, " ", apellido_paterno, " ", apellido_materno) as nombreC')->with('usuario.rol')->get();
+            $facilitadoresAsociados = $cuc->facilitadores()->with('usuario.rol', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado', 'tiposangre', 'nacionalidad', 'estado')
+                ->selectRaw('*,CONCAT(nombre, " ", apellido_paterno, " ", apellido_materno) as nombreC')->with('usuario.rol')->get();
             return ApiResponses::success('Lista de Facilitadores de Cuc', 200, $facilitadoresAsociados);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('No encontrado', 404);
@@ -295,7 +345,7 @@ class CucsController extends Controller
         try {
             $cuc = Cucs::findOrFail($cucId);
             // $facilitadoresAsociadas = $cuc->facilitadores()->with('usuario.rol')->get();
-            $facilitadoresAsociadas = $cuc->facilitadores()->with('usuario.rol', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado','tiposangre','nacionalidad', 'estado')
+            $facilitadoresAsociadas = $cuc->facilitadores()->with('usuario.rol', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado', 'tiposangre', 'nacionalidad', 'estado')
                 ->selectRaw('*, CONCAT(nombre, " ", apellido_paterno, " ", apellido_materno) as nombreC')
                 ->get();
             return ApiResponses::success('Lista de Facilitadores de Cuc', 200, $facilitadoresAsociadas);
@@ -310,7 +360,7 @@ class CucsController extends Controller
     {
         try {
             $cuc = Cucs::findOrFail($cucId);
-            $consejeros = $cuc->consejeros()->with('usuario.rol', 'cuc', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado','tiposangre','nacionalidad', 'estado')->get();
+            $consejeros = $cuc->consejeros()->with('usuario.rol', 'cuc', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado', 'tiposangre', 'nacionalidad', 'estado')->get();
             // $cuc = Cucs::with('consejeros')->findOrFail($cucId);
             return ApiResponses::success('Consejero del cuc', 200, $consejeros);
         } catch (ModelNotFoundException $e) {
@@ -322,7 +372,7 @@ class CucsController extends Controller
     {
         try {
             $cuc = Cucs::findOrFail($cucId);
-            $escolares = $cuc->escolares()->with('usuario.rol', 'cuc', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado','tiposangre', 'nacionalidad', 'estado')->get();
+            $escolares = $cuc->escolares()->with('usuario.rol', 'cuc', 'direccion.colonia.cp', 'direccion.colonia.municipio.estado', 'tiposangre', 'nacionalidad', 'estado')->get();
             return ApiResponses::success('Escolar del cuc', 200, $escolares);
         } catch (ModelNotFoundException $e) {
             return ApiResponses::error('No encontrado', 404);
@@ -359,15 +409,15 @@ class CucsController extends Controller
             // Obtener el CUC correspondiente a la clave_cuc del consejero
             $cuc = Cucs::where('clave_cuc', $claveCucEscolar)->first();
 
-                if ($cuc) {
-                    // Obtiene los dos ultimos dígitos de la clave_cuc
-                    $primerosDosDigitosCuc = substr($cuc->clave_cuc, 7, 9);
+            if ($cuc) {
+                // Obtiene los dos ultimos dígitos de la clave_cuc
+                $primerosDosDigitosCuc = substr($cuc->clave_cuc, 7, 9);
 
-                    // Busca los grupos cuya clave_grupo comience con los dos ultimos dígitos del CUC
-                    $grupos = Grupos::where('clave_grupo', 'like', $primerosDosDigitosCuc . '%')->with('carrera')->get();
+                // Busca los grupos cuya clave_grupo comience con los dos ultimos dígitos del CUC
+                $grupos = Grupos::where('clave_grupo', 'like', $primerosDosDigitosCuc . '%')->with('carrera')->get();
 
-                    return ApiResponses::success('Grupos relacionados con el CUC', 200, $grupos);
-                }
+                return ApiResponses::success('Grupos relacionados con el CUC', 200, $grupos);
+            }
             // }
 
             // return ApiResponses::error('Acceso no autorizado', 403);
@@ -411,8 +461,17 @@ class CucsController extends Controller
             $cuc = Cucs::findOrfail($claveCucEscolar);
             $numeroCuc = $cuc->numero;
 
-            $estudiantess = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])->with('usuario.rol','grupo.carrera' ,'direccion.colonia.cp',
-            'direccion.colonia.municipio.estado','tiposangre','lenguaindigena','puebloindigena', 'nacionalidad','estado')->get();
+            $estudiantess = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])->with(
+                'usuario.rol',
+                'grupo.carrera',
+                'direccion.colonia.cp',
+                'direccion.colonia.municipio.estado',
+                'tiposangre',
+                'lenguaindigena',
+                'puebloindigena',
+                'nacionalidad',
+                'estado'
+            )->get();
 
             $estudiantesTransformados = $estudiantess->map(function ($estudiante) {
                 $documentos = [
@@ -438,12 +497,12 @@ class CucsController extends Controller
                 $estudiante->documentacion = $documentos;
 
                 // Elimina el campo 'documento' original
-                unset($estudiante->documento);
+                unset ($estudiante->documento);
 
                 return $estudiante;
             });
 
-            return ApiResponses::success('Estudiantes en el cuc ', 200,$estudiantesTransformados);
+            return ApiResponses::success('Estudiantes en el cuc ', 200, $estudiantesTransformados);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('No encontrado', 404);
         } catch (Exception $e) {
@@ -458,14 +517,140 @@ class CucsController extends Controller
             $claveCucEscolar = $usuarioEscolar->escolar->clave_cuc;
             $cuc = Cucs::findOrFail($claveCucEscolar);
 
-            $clases = Clases::where('clave_cuc', $claveCucEscolar)->with('periodo','materia','facilitador',
-            'cuc','carrera')->get();
+            $clases = Clases::where('clave_cuc', $claveCucEscolar)->with(
+                'periodo',
+                'materia',
+                'facilitador',
+                'cuc',
+                'carrera'
+            )->get();
 
-            return ApiResponses::success('Clases en el cuc ', 200,$clases);
+            return ApiResponses::success('Clases en el cuc ', 200, $clases);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('No encontrado', 404);
         } catch (Exception $e) {
             return ApiResponses::error('Error: ' . $e->getMessage(), 500);
         }
     }
+
+
+    public function estudiantesDeCUCServicio(Request $request)
+    {
+        try {
+            $usuarioEscolar = auth()->user();
+            $claveCucEscolar = $usuarioEscolar->escolar->clave_cuc;
+            $cuc = Cucs::findOrfail($claveCucEscolar);
+            $numeroCuc = $cuc->numero;
+            $estudiantess = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = (?)", [$numeroCuc])
+                ->where('servicio_estatus', '=', true)
+                ->with(
+                    'usuario.rol',
+                    'grupo.carrera',
+                    'direccion.colonia.cp',
+                    'direccion.colonia.municipio.estado',
+                    'tiposangre',
+                    'lenguaindigena',
+                    'puebloindigena',
+                    'nacionalidad',
+                    'estado'
+                )
+                ->get();
+  $estudiantesTransformados = $estudiantess;
+            return ApiResponses::success('Estudiantes en el cuc ', 200, $estudiantesTransformados);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('No encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+
+    }
+    public function candidatosDeCUCServicio(Request $request)
+    {
+        try {
+            $usuarioEscolar = auth()->user();
+            $claveCucEscolar = $usuarioEscolar->escolar->clave_cuc;
+            $cuc = Cucs::findOrfail($claveCucEscolar);
+            $numeroCuc = $cuc->numero;
+            $estudiantess = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = (?)", [$numeroCuc])
+                ->where('servicio_estatus', '=', false)
+                ->with(
+                    'usuario.rol',
+                    'grupo.carrera',
+                    'direccion.colonia.cp',
+                    'direccion.colonia.municipio.estado',
+                    'tiposangre',
+                    'lenguaindigena',
+                    'puebloindigena',
+                    'nacionalidad',
+                    'estado'
+                )
+                ->get();
+            $estudiantesTransformados = $estudiantess;
+            return ApiResponses::success('Estudiantes en el cuc ', 200, $estudiantesTransformados);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('No encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+
+    }
+
+
+
+
+    public function activarServicio(Request $request, $matricula)
+    {
+        try {
+
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+            $estudiante->servicio_estatus = true;
+            $estudiante->save();
+    
+            return ApiResponses::success('Servicio Estatus actulizado', 200,$estudiante);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function cancelarServicio(Request $request, $matricula)
+    {
+        try {
+
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+            $estudiante->servicio_estatus = false;
+            $estudiante->save();
+    
+            return ApiResponses::success('Servicio Estatus actulizado', 200,$estudiante);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+    public function revisadoEstatus( $matricula)
+    {
+        try {
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+           
+            $estudiante->estatus_envio = 2;
+            $estudiante->save();
+    
+            return ApiResponses::success('Estatus revisado ', 200, $estudiante->estatus_envio);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
 }

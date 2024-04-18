@@ -15,7 +15,7 @@ class FaseCinco extends Model
 
     protected $primaryKey = 'id_faseCinco';
   
-    protected $fillable = ['carta_terminacion','estatus','comentario','id_servicio'];
+    protected $fillable = ['carta_terminacion','estatus_envio','comentario','id_servicio'];
 
     protected $casts = [
         'id_faseCinco'=> 'string'

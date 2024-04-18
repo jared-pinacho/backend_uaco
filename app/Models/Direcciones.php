@@ -38,6 +38,12 @@ class Direcciones extends Model
         return $this->hasOne(Estudiantes::class, 'id_direccion');
     }
 
+    public function servicio()
+    {
+        return $this->hasOne(Servicio::class, 'id_direccion');
+    }
+
+
     public function colonia()
     {
         return $this->belongsTo(Colonia::class, 'id_colonia','id_colonia');

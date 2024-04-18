@@ -22,6 +22,17 @@ class TipoSangreController extends Controller
         }
     }
 
+
+    public function regresaSangre(Request $request)
+    {
+        try {
+            $tiposangre = TipoSangre::all();
+            return ApiResponses::success('Lista de tipos de sangre', 200, $tiposangre);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */

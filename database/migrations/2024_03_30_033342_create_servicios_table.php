@@ -16,25 +16,26 @@ return new class extends Migration
             $table->bigIncrements('id_servicio');
             $table->string('modalidad',20);
             $table->string('tipo_dep',20);
-            $table->string('nombre_dep',40);
+            $table->string('nombre_dep',100);
             $table->string('titular_dep',100);
             $table->string('cargo_tit',40);
             $table->string('grado_tit',20);
             $table->string('responsable',100);
-            $table->string('programa',50);
-            $table->string('actividad',20);
+            $table->string('programa',100);
+            $table->string('actividad',200);
             $table->string('fecha_ini',30);
             $table->string('fecha_fin',30);
+            $table->bigInteger('id_direccion')->unsigned();
             $table->string('horas',4);
             $table->string('matricula');
             $table->string('matricula_escolar')->nullable();
-            $table->boolean('estatus')->default(false);
-            $table->string('coemntario',100)->nullable();
-
+            $table->integer('estatus_envio')->default(1);
+            $table->string('comentario',250)->nullable();
+            $table->foreign('id_direccion')->references('id_direccion')->on('direcciones');
 
             $table->foreign('matricula_escolar')->references('matricula')->on('escolares');
             $table->foreign('matricula')->references('matricula')->on('estudiantes');
-
+            $table->softDeletes();
             $table->timestamps(false);
         });
     }

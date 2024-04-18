@@ -15,7 +15,7 @@ class FaseCuatro extends Model
 
     protected $primaryKey = 'id_faseCuatro';
   
-    protected $fillable = ['reporte_tres','estatus','comentario','id_servicio'];
+    protected $fillable = ['reporte_tres','estatus_envio','comentario','id_servicio'];
 
     protected $casts = [
         'id_faseCuatro'=> 'string'

@@ -15,7 +15,7 @@ class FaseFinal extends Model
 
     protected $primaryKey = 'id_faseFinal';
   
-    protected $fillable = ['recibo','estatus','comentario','id_servicio'];
+    protected $fillable = ['recibo','estatus_envio','comentario','id_servicio'];
 
     protected $casts = [
         'id_faseFinals'=> 'string'

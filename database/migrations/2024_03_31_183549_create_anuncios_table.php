@@ -17,9 +17,10 @@ return new class extends Migration
             $table->string('descripcion',150);
             $table->string('fecha',30);
             $table->string('matricula');
-
+           
 
             $table->foreign('matricula')->references('matricula')->on('escolares');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -15,7 +15,7 @@ class Foraneo extends Model
 
     protected $primaryKey = 'id_foraneo';
 
-    protected $fillable = ['nombre','apellido_paterno','apellido_materno','edad','telefono','correo','semestre','discapacidad','lengua','institucion','matricula_escolar','licenciatura','programa','titular_dep','cargo_titular','grado_titular','resp_seg','CUC','fecha_inicio','fecha_final','matricula'
+    protected $fillable = ['nombre','apellido_paterno','apellido_materno','edad','telefono','correo','semestre','discapacidad','lengua','institucion','matricula_escolar','licenciatura','programa','titular_dep','cargo_titular','grado_titular','resp_seg','CUC','fecha_inicio','fecha_final','matricula','estatus'
        
     ];
 

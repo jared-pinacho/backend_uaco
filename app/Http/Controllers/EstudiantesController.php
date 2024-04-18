@@ -6,6 +6,7 @@ use App\Http\Responses\ApiResponses;
 use App\Models\Estudiantes;
 use App\Models\User;
 use App\Models\Cucs;
+use App\Models\cuc_carrera;
 use App\Models\CodigoPostal;
 use App\Models\Colonia;
 use App\Models\Direcciones;
@@ -22,7 +23,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 class EstudiantesController extends Controller
 {
     /**
@@ -802,4 +803,420 @@ class EstudiantesController extends Controller
             return ApiResponses::error('Error: ' . $e->getMessage(), 500);
         }
     }
+
+
+    public function servicioEstatus($id)
+    {
+      try {
+       
+        // Buscar el estudiante por su ID
+        $estudiante = Estudiantes::findOrFail($id);
+    
+        return ApiResponses::success('Encontrado', 200, $estudiante->servicio_estatus);
+      } catch (ModelNotFoundException $e) {
+        return ApiResponses::error('Estudiante no encontrado', 404);
+      } catch (Exception $e) { // Capturar cualquier otra excepción
+        return ApiResponses::error('Error interno del servidor', 500);
+      }
+    }
+
+    public function matriculaActual()
+    {
+        
+try{
+
+        $user = Auth::user();
+        $id = $user->id;
+
+       // $estudiante = Estudiantes::findOrFail($id);
+        $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
+        return ApiResponses::success('Encontrado', 200,$estudiante->matricula);
+    } catch (ModelNotFoundException $e) {
+      return ApiResponses::error('Estudiante no encontrado', 404);
+    } catch (Exception $e) { // Capturar cualquier otra excepción
+      return ApiResponses::error('Error interno del servidor', 500);
+    }
+    }
+
+
+    public function infoPersonal()
+    {
+        try {
+           
+            $user = Auth::user();
+            $id = $user->id;
+    
+           // $estudiante = Estudiantes::findOrFail($id);
+          $estudia = Estudiantes::where('id', $id)->firstOrFail();
+
+          $matricula = $estudia->matricula;
+
+
+
+          $estudiante = Estudiantes::with('usuario.rol','grupo' ,'direccion.colonia.cp',
+          'direccion.colonia.municipio.estado', 'tiposangre','lenguaindigena','puebloindigena', 'nacionalidad', 'estado', 'documento')->findOrFail($matricula);
+
+    
+            // Buscar al estudiante por su matrícula y cargar las relaciones necesarias
+//$estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+return ApiResponses::success('Encontrado', 200,$estudiante);
+} catch (ModelNotFoundException $e) {
+  return ApiResponses::error('Estudiante no encontrado', 404);
+} catch (Exception $e) { // Capturar cualquier otra excepción
+  return ApiResponses::error('Error interno del servidor', 500);
+}
+    }
+
+
+
+
+    public function actualizaInfo(Request $request, $idEstudiante)
+    {
+        DB::beginTransaction();
+        try{
+            $request->validate([
+                'nombre'=> 'required',
+                'apellidopaterno'=> 'required',
+                'apellidomaterno'=> 'required',
+                'edad'=> 'required',
+                'sexo'=> 'required',
+                'fecha_nacimiento'=> 'required',
+                'niveleducativo'=> 'required',
+                'telefono'=> 'required',
+                'telefono_emergencia'=> 'required',
+                'num_exterior' => 'required',
+                'calle' => 'required',
+                'colonia' => 'required',
+                'nacionalidad'=> 'required',
+                'id_tiposangre'=> 'required',
+                'padecimiento'=> 'required',
+                'discapacidad'=> 'required',
+                'regular'=> 'required',
+                'semestre'=> 'required',
+                'estatus'=> 'required',
+                'lengua_indigena'=> 'required',
+                'pueblo_indigena'=> 'required',
+                'clave_grupo'=> 'required|exists:grupos,clave_grupo',
+                'email' => 'required',
+                'otro_pueblo',
+                'otra_lengua',
+                //'documentacion' => 'array'
+            ]);
+            $lengua = $request->otra_lengua;
+            $pueblo = $request->otro_pueblo;
+            $nacionaalidad = $request->otra_nacionalidad;
+            $nacionalidad = (string) $request->nacionalidad;
+
+            $estudiante = Estudiantes::findOrFail($idEstudiante);
+
+            $direccion = $estudiante->direccion;
+            $usuario = $estudiante->usuario;
+            $usuario->email = $request->email;
+            $usuario->update();
+
+            $estudiante->matricula = $request->input('matricula');
+            $estudiante->nombre = $request->nombre;
+            $estudiante->apellido_paterno = $request->apellidopaterno;
+            $estudiante->apellido_materno = $request->apellidomaterno;
+            $estudiante->edad = $request->edad;
+            $estudiante->sexo = $request->sexo;
+            $estudiante->fecha_nacimiento = $request->fecha_nacimiento;
+            $estudiante->nivel_educativo = $request->niveleducativo;
+            $estudiante->telefono = $request->telefono;
+            $estudiante->telefono_emergencia = $request->telefono_emergencia;
+            $estudiante->id_tiposangre = $request->id_tiposangre;
+            $estudiante->padecimiento = $request->padecimiento;
+            $estudiante->discapacidad = $request->discapacidad;
+            $estudiante->regular = $request->regular;
+            $estudiante->semestre = $request->semestre;
+            $estudiante->estatus = $request->estatus;
+
+            if ($request->nacionalidad === '1' &&  $nacionaalidad !== '') {
+                $n = Nacionalidades::where('nombre', $nacionaalidad)->first();
+
+                if (!$n) {
+                    $nueva_nacionalidad = new Nacionalidades();
+                    $nueva_nacionalidad->nombre = $request->otra_nacionalidad;
+                    $nueva_nacionalidad->save();
+                    $estudiante->nacionalidad()->associate($nueva_nacionalidad);
+                } else {
+                    $estudiante->nacionalidad()->associate($n);
+                    
+                }
+            }else{
+                $estudiante->id_nacionalidad = $request->nacionalidad;
+            }
+
+            if($nacionalidad !== '2'){
+                $estudiante->curp = '';
+                $estudiante->estado_nacimiento= '33';
+            }else {
+                $estudiante->curp = $request->curp;
+                $estudiante->estado_nacimiento= $request->estado_nacimiento;
+            }
+
+            if ($request->lengua_indigena === '2' &&  $lengua !== '') {
+                $l = LenguasIndigenas::where('nombre', $lengua)->first();
+
+                if (!$l) {
+                    $nueva_lengua = new LenguasIndigenas();
+                    $nueva_lengua->nombre = $request->otra_lengua;
+                    $nueva_lengua->save();
+                    $estudiante->lenguaindigena()->associate($nueva_lengua);
+                } else {
+                    $estudiante->lenguaindigena()->associate($l);
+                    
+                }
+            }else{
+                $estudiante->id_lenguaindigena = $request->lengua_indigena;
+            }
+
+            if ($request->pueblo_indigena === '2' &&  $pueblo !== '') {
+                $p = PueblosIndigenas::where('nombre', $pueblo)->first();
+                
+                if (!$p) {
+                    $nuevo_pueblo = new PueblosIndigenas();
+                    $nuevo_pueblo->nombre =$request->otro_pueblo;
+                    $nuevo_pueblo->save();
+                    $estudiante->puebloindigena()->associate($nuevo_pueblo);
+                } else {
+                    $estudiante->puebloindigena()->associate($p);
+                }
+            }else{
+                $estudiante->id_puebloindigena = $request->pueblo_indigena;
+            }
+            
+            $estudiante -> clave_grupo = $request->clave_grupo;
+            $direccion->calle = $request->input('calle');
+            $direccion->num_exterior = $request->input('num_exterior');
+            $direccion->id_colonia = $request->input('colonia');
+            $direccion->update();
+            $estudiante->update();            
+
+            DB::commit();
+            return ApiResponses::success('Actualizado', 201);
+        } catch (ModelNotFoundException $ex) {
+            DB::rollBack();
+            return ApiResponses::error('Error: ' . $ex->getMessage(), 404);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function obtenerEnvio()
+    {
+      try {
+       
+        $user = Auth::user();
+        $id = $user->id;
+    
+        
+
+        // $estudiante = Estudiantes::findOrFail($id);
+       $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
+       $envio = $estudiante->estatus_envio;
+    
+        return ApiResponses::success('Envio', 200, $envio);
+      } catch (ModelNotFoundException $e) {
+        return ApiResponses::error('Estudiante no encontrado', 404);
+      } catch (Exception $e) { // Capturar cualquier otra excepción
+        return ApiResponses::error('Error interno del servidor', 500);
+      }
+    }
+
+    
+    public function enviadoEstatus()
+    {
+        try {
+
+            $user = Auth::user();
+            $id = $user->id;
+        
+            
+    
+            // $estudiante = Estudiantes::findOrFail($id);
+           $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+    
+
+            $estudiante->estatus_envio = 1;
+            $estudiante->save();
+    
+            return ApiResponses::success('Estatus enviado ', 200, $estudiante->estatus_envio);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function cambiarEstatus($matricula, $estado)
+    {
+        try {
+
+            // $estudiante = Estudiantes::findOrFail($id);
+           $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+    
+
+            $estudiante->estatus_envio = $estado;
+            $estudiante->save();
+    
+            return ApiResponses::success('Estatus se cambio', 200, $estudiante->estatus_envio);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function enviarComentario($matricula, $comentario)
+    {
+        try {
+
+            // $estudiante = Estudiantes::findOrFail($id);
+           $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+    
+
+            $estudiante->comentario = $comentario;
+            $estudiante->save();
+    
+            return ApiResponses::success('Comentario Enviado', 200, $estudiante->comentario);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+
+
+    public function obtenerEnvioInfo($matricula)
+    {
+      try {
+       
+        $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+
+       $envio = $estudiante->estatus_envio;
+    
+        return ApiResponses::success('Envio', 200, $envio);
+      } catch (ModelNotFoundException $e) {
+        return ApiResponses::error('Estudiante no encontrado', 404);
+      } catch (Exception $e) { // Capturar cualquier otra excepción
+        return ApiResponses::error('Error interno del servidor', 500);
+      }
+    }
+
+
+
+    
+    public function infoPage()
+    {
+        try {
+            $user = Auth::user();
+            $id = $user->id;
+
+            $email= $user->email;
+
+
+            $estudiante = Estudiantes::with(
+                'grupo.carrera'
+                
+            )->where('id', $id)->firstOrFail();
+
+            $carrera = $estudiante->grupo->clave_carrera;
+
+           $cuc = cuc_carrera::where('clave_carrera', $carrera)->first();
+           $claveCuc = $cuc->clave_cuc;
+            
+
+           $c=Cucs::where('clave_cuc', $claveCuc)->first();
+           $nombre = $c->nombre;
+
+
+           $estudianteData = [
+            'matricula' =>$estudiante->matricula,
+            'apellido_paterno' => $estudiante->apellido_paterno,
+            'apellido_materno' => $estudiante->apellido_materno,
+            'nombre' => $estudiante->nombre,
+            'correo' => $email,
+            'semestre' => $estudiante->semestre,
+            'carrera' => $estudiante->grupo->carrera->nombre,
+            'cuc' =>$nombre
+            // Agrega más campos aquí si es necesario
+        ];
+
+
+
+           $response = [
+            'estudiante' => $estudianteData,
+            'nombre' => $nombre
+        ];
+
+
+            // Si se encuentra el servicio, devolver una respuesta exitosa
+            return ApiResponses::success('Servicio encontrado', 200, $estudianteData);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            // Capturar cualquier otra excepción y devolver un error interno del servidor
+            return ApiResponses::error('Error interno del servidor: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+
+    public function obtenerEstado($matricula)
+    {
+      try {
+       
+       
+       $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+       $envio = $estudiante->estatus_envio;
+    
+        return ApiResponses::success('Envio', 200, $envio);
+      } catch (ModelNotFoundException $e) {
+        return ApiResponses::error('Estudiante no encontrado', 404);
+      } catch (Exception $e) { // Capturar cualquier otra excepción
+        return ApiResponses::error('Error interno del servidor', 500);
+      }
+    }
+
+
+
+    public function obtenerComentario( )
+    {
+      try {
+        
+       
+ $user = Auth::user();
+ $id = $user->id;
+
+ 
+
+ // $estudiante = Estudiantes::findOrFail($id);
+$estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
+$comentario = $estudiante->comentario;
+
+ return ApiResponses::success('Envio', 200, $comentario);
+      } catch (ModelNotFoundException $e) {
+        return ApiResponses::error('Estudiante no encontrado', 404);
+      } catch (Exception $e) { // Capturar cualquier otra excepción
+        return ApiResponses::error('Error interno del servidor', 500);
+      }
+    }
+
+
+
+
 }

@@ -34,9 +34,10 @@ return new class extends Migration
             $table->date('fecha_inicio');
             $table->date('fecha_final');
             $table->string('matricula');
-
+            $table->integer('estatus')->default(0);
 
             $table->foreign('matricula')->references('matricula')->on('escolares');
+            $table->softDeletes();
 
             $table->timestamps();
         });

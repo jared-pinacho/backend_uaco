@@ -22,6 +22,17 @@ class NacionalidadesController extends Controller
         }
     }
 
+
+    public function regresaNacionalidades()
+    {
+        try {
+            $nacionalidad = Nacionalidades::all();
+            return ApiResponses::success('Lista de Nacionalidades', 200, $nacionalidad);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */

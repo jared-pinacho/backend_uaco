@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('fase_tres', function (Blueprint $table) {
             $table->bigIncrements('id_faseTres');
             $table->string('reporte_dos',100);
-            $table->boolean('estatus')->default(false);
+            $table->integer('estatus_envio')->default(0);
             $table->string('comentario',100);
             $table->bigInteger('id_servicio')->unsigned();
 
 
             $table->foreign('id_servicio')->references('id_servicio')->on('servicios');
+            $table->softDeletes();
             $table->timestamps(false);
         });
     }

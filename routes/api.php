@@ -24,6 +24,7 @@ use App\Http\Controllers\ClasesController;
 use App\Http\Controllers\NacionalidadesController;
 use App\Http\Controllers\AreasConsejeriaController;
 use App\Http\Controllers\EstadoDocumentacionController;
+use App\Http\Controllers\ServicioController;
 use App\Models\Carreras;    
 use App\Models\Estudiantes;
 use App\Models\Facilitadores;
@@ -103,8 +104,9 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::get('/escolares/{id}', [EscolaresController::class, 'show']);
 
     Route::get('/estudiantes', [EstudiantesController::class, 'index']);
-    Route::get('/estudiantes/{id}', [EstudiantesController::class, 'show']);
     Route::get('/estudiante/{id}', [EstudiantesController::class, 'showEstudiante']);
+    Route::get('/estudiantes/{id}', [EstudiantesController::class, 'show']);
+
 
     Route::get('/periodos', [PeriodosController::class, 'index']);
     Route::get('/periodos/{id}', [PeriodosController::class, 'show']);
@@ -123,6 +125,15 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::get('/facilitadores/{id}', [FacilitadoresController::class, 'show']);
     Route::get('/cucs/carreras/carreritas', [CucsController::class, 'pruebaCarrerasPorCuc']);//comparten escolares y consejeros
     Route::get('/obc/estudiantes/estudiantess', [CucsController::class, 'estudiantesDeCUC']);
+    Route::get('/obc/estudiantes/estudiantess/prestadores', [CucsController::class, 'estudiantesDeCUCServicio']);
+    Route::get('/obc/estudiantes/estudiantess/candidatos', [CucsController::class, 'candidatosDeCUCServicio']);
+    Route::patch('obc/estudiantes/matricula/activar/{id}', [CucsController::class, 'activarServicio']);
+    Route::patch('obc/estudiantes/matricula/cancelar/{id}', [CucsController::class, 'cancelarServicio']);
+    Route::patch('estudiante/estatus/revisado/{id}', [CucsController::class, 'revisadoEstatus']);
+    Route::get('/estado/estudiante/envio/{id}',[EstudiantesController::class,'obtenerEnvioInfo']);
+
+
+
     Route::get('/obe/clases/clasess', [CucsController::class, 'clasesDeCuc']);
     // Route::get('/cucs/{cucId}/facilitadores', [CucsController::class, 'facilitadoresPorCuc']); 
 
@@ -232,7 +243,7 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::get('/cuc/escolar/facilitadores', [CucsController::class, 'facilitadoresPorCucDeEscolar']);
     Route::get('/carreras/{claveCarrera}/cucs/grupos', [CarrerasController::class, 'pruebaGruposPorCarreraPorCuc']);
     Route::get('/cucs/grupos/grupitos', [CucsController::class, 'pruebaGruposPorCuc']);
-    // Route::get('/cucs/carreras/carreritas', [CucsController::class, 'pruebaCarrerasPorCuc']);
+    Route::get('/cucs/carreras/carreritas', [CucsController::class, 'pruebaCarrerasPorCuc']);
     Route::get('/escolares/cuc/especifico', [EscolaresController::class, 'obtenerCucDeEscolar']);//para obtener la info de la cuc del consejero
     Route::post('/clases', [ClasesController::class, 'store']);
     Route::delete('/clases/{id}', [ClasesController::class, 'destroy']);
@@ -242,9 +253,13 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::post('/escolar/clases/estudiantes/calificacion', [ClasesController::class, 'calificarEstudiantesPorEscolar']);
     Route::get('/escolares/clases/{claveClase}/estudiantes', [ClasesController::class, 'estudiantesPorClase']);
     Route::put('/documentacion/{claveEstudiante}', [EstadoDocumentacionController::class, 'update']);
+    Route::get('/lengua/regresa', [LenguasIndigenasController::class, 'regresaLengua']);
+    Route::get('/pueblos/regresa', [PueblosIndigenasController::class, 'regresaPueblo']);
+    Route::get('/regresa/envio/{id}',[EstudiantesController::class,'obtenerEstado']);
+    Route::patch('/estado/cambio/{matricula}/{estado}', [EstudiantesController::class, 'cambiarEstatus']);  
 
-
-
+    Route::patch('/envia/comentario/{matricula}/{comentario}', [EstudiantesController::class, 'enviarComentario']);  
+    
 
 });
 
@@ -253,13 +268,34 @@ Route::middleware(['auth:sanctum', 'checkFacilitadorRole'])->group(function () {
     Route::get('/cuc/{claveCuc}/periodo/{idPeriodo}/facilitadores/clases', [FacilitadoresController::class, 'clasesDeFacilitadores']);
     Route::get('/facilitadores/clases/{claveClase}/estudiantes', [ClasesController::class, 'estudiantesPorClase']);
     Route::post('/facilitadores/clases/estudiantes/calificacion', [ClasesController::class, 'calificarEstudiantes']);
+   
 });
 
 Route::middleware(['auth:sanctum', 'checkEstudiantesRole'])->group(function () {
+    Route::get('/estudiantes/informacion/general', [EstudiantesController::class, 'infoPersonal']);
     Route::get('/estudiantes/clases/general', [ClasesController::class, 'clasesDeEstudiantes']);
     Route::get('/estudiantes/clases/general/totales', [ClasesController::class, 'TotalClasesDeEstudiantes']);
     Route::get('/estudiantes/clases/periodo/{idPeriodo}', [ClasesController::class, 'clasesDeEstudiantesPorPeriodo']);
     Route::get('/estudiantes/pertenece/periodos', [ClasesController::class, 'periodoDeEstudiantesPorClases']);
+    Route::get('/estudiantes/servicio/{id}', [EstudiantesController::class, 'servicioEstatus']);
+    Route::get('/estudiantes/matricula/propia', [EstudiantesController::class, 'matriculaActual']);
+    
+    Route::get('/tipos', [TipoSangreController::class, 'regresaSangre']);
+    Route::get('/lengua', [LenguasIndigenasController::class, 'regresaLengua']);
+    Route::get('/pueblos', [PueblosIndigenasController::class, 'regresaPueblo']);
+    Route::get('/cucscarreras', [CucsController::class, 'regresaCarrerasPorCuc']);//comparten escolares y consejeros
+    Route::get('/nacionalidad', [NacionalidadesController::class,'regresaNacionalidades']);
+    Route::put('/estudia/{id}', [EstudiantesController::class, 'actualizaInfo']);
+    Route::get('/estado/envio',[EstudiantesController::class,'obtenerEnvio']);
+    Route::patch('/estado/enviado', [EstudiantesController::class, 'enviadoEstatus']);   
+    Route::post('/servicio', [ServicioController::class, 'store']);
+    Route::get('/servicio/info', [ServicioController::class, 'infoServicio']);
+
+    Route::get('/regresa/estado/social',[ServicioController::class,'obtenerEnvio']);
+    Route::patch('/enviado/estado/social', [ServicioController::class, 'enviadoEstatus']); 
+    Route::get('/infoPage', [EstudiantesController::class, 'infoPage']);
+    Route::get('/comentario', [EstudiantesController::class,'obtenerComentario']);
+
     //Route::get('/estudiantes/pertenece/prueba', [ClasesController::class, 'periodoDeEstudiantesPorClasesPrueba']);
 });
 

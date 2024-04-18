@@ -53,4 +53,15 @@ class LenguasIndigenasController extends Controller
     {
         //
     }
+
+
+    public function regresaLengua()
+    {
+        try {
+            $lenguasind = LenguasIndigenas::all();
+            return ApiResponses::success('Lista de lenguas indigenas', 200, $lenguasind);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
 }
