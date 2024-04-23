@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id_faseFinal');
             $table->string('recibo',100);
             $table->integer('estatus_envio')->default(0);
-            $table->string('comentario',100);
+            $table->string('comentario',255)->nullable();
             $table->bigInteger('id_servicio')->unsigned();
 
 

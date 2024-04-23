@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\CarrerasController;
 use App\Http\Controllers\CucsController;
 use App\Http\Controllers\EstudiantesController;
+use App\Http\Controllers\ForaneoController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\ConsejerosController;
 use App\Http\Controllers\EscolaresController;
@@ -105,6 +106,7 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
 
     Route::get('/estudiantes', [EstudiantesController::class, 'index']);
     Route::get('/estudiante/{id}', [EstudiantesController::class, 'showEstudiante']);
+    Route::get('/foraneo/{id}', [ForaneoController::class, 'show']);
     Route::get('/estudiantes/{id}', [EstudiantesController::class, 'show']);
 
 
@@ -125,6 +127,10 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::get('/facilitadores/{id}', [FacilitadoresController::class, 'show']);
     Route::get('/cucs/carreras/carreritas', [CucsController::class, 'pruebaCarrerasPorCuc']);//comparten escolares y consejeros
     Route::get('/obc/estudiantes/estudiantess', [CucsController::class, 'estudiantesDeCUC']);
+
+    
+
+
     Route::get('/obc/estudiantes/estudiantess/prestadores', [CucsController::class, 'estudiantesDeCUCServicio']);
     Route::get('/obc/estudiantes/estudiantess/candidatos', [CucsController::class, 'candidatosDeCUCServicio']);
     Route::patch('obc/estudiantes/matricula/activar/{id}', [CucsController::class, 'activarServicio']);
@@ -257,10 +263,17 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::get('/pueblos/regresa', [PueblosIndigenasController::class, 'regresaPueblo']);
     Route::get('/regresa/envio/{id}',[EstudiantesController::class,'obtenerEstado']);
     Route::patch('/estado/cambio/{matricula}/{estado}', [EstudiantesController::class, 'cambiarEstatus']);  
-
     Route::patch('/envia/comentario/{matricula}/{comentario}', [EstudiantesController::class, 'enviarComentario']);  
+    Route::get('/obten/servicio/info/{matricula}', [ServicioController::class, 'infoServicioEscolar']);
+
+    Route::patch('/estado/social/{matricula}/{estado}', [ServicioController::class, 'cambiarEst']);  
+    Route::patch('/envia/comentario/social/{matricula}/{comentario}', [ServicioController::class, 'enviarComentarioSocial']);  
     
 
+    Route::post('/foraneos', [ForaneoController::class, 'store']);
+    Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
+    Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
+    Route::put('/foraneos/{id}', [ForaneoController::class, 'update']);
 });
 
 Route::middleware(['auth:sanctum', 'checkFacilitadorRole'])->group(function () {
@@ -291,11 +304,16 @@ Route::middleware(['auth:sanctum', 'checkEstudiantesRole'])->group(function () {
     Route::post('/servicio', [ServicioController::class, 'store']);
     Route::get('/servicio/info', [ServicioController::class, 'infoServicio']);
 
+    
+    Route::get('/estado/servicio',[EstudiantesController::class,'obtenerEstatusServicio']);
+
+
     Route::get('/regresa/estado/social',[ServicioController::class,'obtenerEnvio']);
     Route::patch('/enviado/estado/social', [ServicioController::class, 'enviadoEstatus']); 
     Route::get('/infoPage', [EstudiantesController::class, 'infoPage']);
     Route::get('/comentario', [EstudiantesController::class,'obtenerComentario']);
-
+    Route::get('/comentario/social', [ServicioController::class,'obtenerComentarioSocial']);
+    Route::put('/actualiza/info/social/{matricula}', [ServicioController::class, 'actualizaInfoSocial']);
     //Route::get('/estudiantes/pertenece/prueba', [ClasesController::class, 'periodoDeEstudiantesPorClasesPrueba']);
 });
 

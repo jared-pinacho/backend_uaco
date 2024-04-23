@@ -17,4 +17,10 @@ class LenguasIndigenas extends Model
     public function estudiantes(){
         return $this->hasMany(Estudiantes::class,'id_lenguaindigena','id_lenguaindigena');
     }
+
+
+    public function foraneos(){
+        return $this->hasMany(Foraneo::class,'id_lenguaindigena','id_lenguaindigena');
+    }
+
 }

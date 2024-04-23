@@ -200,21 +200,12 @@ class ServicioController extends Controller
 
 
 
-    public function cambiarEstado($estado)
+    public function cambiarEst($matricula, $estado)
     {
         try {
 
-
-            $user = Auth::user();
-            $id = $user->id;
-        
             // $estudiante = Estudiantes::findOrFail($id);
-           $estudiante = Estudiantes::where('id', $id)->firstOrFail();
-           $matricula = $estudiante->matricula;
-
-           // Buscar el servicio por matrícula del estudiante
            $servicio = Servicio::where('matricula', $matricula)->firstOrFail();
-
     
 
             $servicio->estatus_envio = $estado;
@@ -227,5 +218,149 @@ class ServicioController extends Controller
             return ApiResponses::error('Error: ' . $e->getMessage(), 500);
         }
     }
+
+
+
+
+
+    public function infoServicioEscolar($dato)
+    {
+        try {
+            
+
+            // Buscar el servicio por matrícula del estudiante
+            $servicio = Servicio::with(
+                'direccion.colonia.cp',
+                'direccion.colonia.municipio.estado'
+            )->where('matricula', $dato)->firstOrFail();
+
+
+            // Si se encuentra el servicio, devolver una respuesta exitosa
+            return ApiResponses::success('Servicio encontrado', 200, $servicio);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            // Capturar cualquier otra excepción y devolver un error interno del servidor
+            return ApiResponses::error('Error interno del servidor: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function enviarComentarioSocial($matricula, $comentario)
+    {
+        try {
+
+            // $estudiante = Estudiantes::findOrFail($id);
+           $servicio = Servicio::where('matricula', $matricula)->firstOrFail();
+    
+
+            $servicio->comentario = $comentario;
+            $servicio->save();
+    
+            return ApiResponses::success('Comentario Enviado', 200, $servicio->comentario);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function obtenerComentarioSocial( )
+    {
+        try {
+            $user = Auth::user();
+            $id = $user->id;
+        
+            // $estudiante = Estudiantes::findOrFail($id);
+           $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+           $matricula = $estudiante->matricula;
+
+            $servicio = Servicio::where('matricula', $matricula)->firstOrFail();
+    
+
+            $comentario = $servicio->comentario;
+
+            return ApiResponses::success('Envio', 200, $comentario);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
+    }
+
+
+
+
+
+
+
+    public function actualizaInfoSocial(Request $request, $matricula)
+    {
+        DB::beginTransaction();
+        try {
+           
+    $request->validate([
+        'modalidad' => 'required',
+        'tipo_dep' => 'required',
+        'nombre_dep' => 'required',
+        'titular_dep' => 'required',
+        'cargo_tit' => 'required',
+        'grado_tit' => 'required',
+        'responsable' => 'required',
+        'programa' => 'required',
+        'actividad' => 'required',
+        'num_exterior' => 'required',
+        'calle' => 'required',
+        'colonia' => 'required',
+        'horas' => 'required',
+    ], );
+
+
+    $servicio = Servicio::where('matricula',$matricula)->firstOrFail();
+    
+   
+    $servicio->modalidad = $request->modalidad;
+    $servicio->tipo_dep = $request->tipo_dep;
+    $servicio->nombre_dep = $request->nombre_dep;
+    $servicio->titular_dep = $request->titular_dep;
+    $servicio->cargo_tit = $request->cargo_tit;
+    $servicio->grado_tit = $request->grado_tit;
+    $servicio->responsable = $request->responsable;
+    $servicio->programa = $request->programa;
+    $servicio->actividad = $request->actividad;
+    $servicio->fecha_ini = $request->fecha_inicio;
+    $servicio->fecha_fin = $request->fecha_final;
+    $servicio->horas = $request->horas;
+    $servicio->matricula = $matricula;
+
+    $direccion = $servicio->direccion;
+
+ 
+    $direccion->calle = $request->input('calle');
+    $direccion->num_exterior = $request->input('num_exterior');
+    $direccion->id_colonia = $request->input('colonia');
+    $direccion->update();
+    $servicio->update();
+
+
+            DB::commit();
+            return ApiResponses::success('Actualizado', 201);
+        } catch (ModelNotFoundException $ex) {
+            DB::rollBack();
+            return ApiResponses::error('Error: ' . $ex->getMessage(), 404);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+
+
+
 
 }

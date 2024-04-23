@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id_faseTres');
             $table->string('reporte_dos',100);
             $table->integer('estatus_envio')->default(0);
-            $table->string('comentario',100);
+            $table->string('comentario',255)->nullable();
             $table->bigInteger('id_servicio')->unsigned();
 
 

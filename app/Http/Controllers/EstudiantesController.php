@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 class EstudiantesController extends Controller
 {
     /**
@@ -59,7 +60,7 @@ class EstudiantesController extends Controller
                 $estudiante->documentacion = $documentos;
 
                 // Elimina el campo 'documento' original
-                unset($estudiante->documento);
+                unset ($estudiante->documento);
 
                 return $estudiante;
             });
@@ -76,31 +77,31 @@ class EstudiantesController extends Controller
      */
     public function store(Request $request)
     {
-        DB::beginTransaction();     
+        DB::beginTransaction();
 
-        try{
+        try {
 
             $request->validate([
-                'nombre'=> 'required',
-                'apellidopaterno'=> 'required',
-                'apellidomaterno'=> 'required',
-                'edad'=> 'required',
-                'sexo'=> 'required',
-                'fecha_nacimiento'=> 'required',
-                'niveleducativo'=> 'required',
-                'telefono'=> 'required',
-                'telefono_emergencia'=> 'required',
+                'nombre' => 'required',
+                'apellidopaterno' => 'required',
+                'apellidomaterno' => 'required',
+                'edad' => 'required',
+                'sexo' => 'required',
+                'fecha_nacimiento' => 'required',
+                'niveleducativo' => 'required',
+                'telefono' => 'required',
+                'telefono_emergencia' => 'required',
                 'num_exterior' => 'required',
                 'calle' => 'required',
                 'colonia' => 'required',
-                'nacionalidad'=> 'required',
-                'id_tiposangre'=> 'required',
-                'padecimiento'=> 'required',
-                'discapacidad'=> 'required',
-                'semestre'=> 'required',
-                'lengua_indigena'=> 'required',
-                'pueblo_indigena'=> 'required',
-                'clave_grupo'=> 'required|exists:grupos,clave_grupo',
+                'nacionalidad' => 'required',
+                'id_tiposangre' => 'required',
+                'padecimiento' => 'required',
+                'discapacidad' => 'required',
+                'semestre' => 'required',
+                'lengua_indigena' => 'required',
+                'pueblo_indigena' => 'required',
+                'clave_grupo' => 'required|exists:grupos,clave_grupo',
                 'email' => 'required|unique:users,email',
                 'password' => 'required',
                 'clave_carrera' => 'required'
@@ -112,7 +113,7 @@ class EstudiantesController extends Controller
             $pueblo = $request->otro_pueblo;
             $nacionaalidad = $request->otra_nacionalidad;
             $nacionalidad = (string) $request->nacionalidad;
-            
+
             $usuarioEscolar = auth()->user();
             $claveCucEscolar = $usuarioEscolar->escolar->clave_cuc;
 
@@ -125,20 +126,20 @@ class EstudiantesController extends Controller
             //obteniendo numero de cuc
             $numeroCuc = $cuc->numero;
             // Obtén los 2 últimos dígitos del año actual
-            
+
 
             $estudiantes = Estudiantes::withTrashed()
-            ->whereHas('grupo', function ($query) use ($request) {
-                $query->whereHas('carrera', function ($subquery) use ($request) {
-                    $subquery->where('clave_carrera', $request->clave_carrera);
-                });
-            })
-            ->whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc]);
+                ->whereHas('grupo', function ($query) use ($request) {
+                    $query->whereHas('carrera', function ($subquery) use ($request) {
+                        $subquery->where('clave_carrera', $request->clave_carrera);
+                    });
+                })
+                ->whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc]);
 
             // Autoincremento
             $ultimoEstudiante = $estudiantes->whereYear('created_at', date('Y'))->latest()->first();
             if ($ultimoEstudiante) {
-                $autoincremento = str_pad((int)substr($ultimoEstudiante->matricula, -4) + 1, 4, '0', STR_PAD_LEFT);
+                $autoincremento = str_pad((int) substr($ultimoEstudiante->matricula, -4) + 1, 4, '0', STR_PAD_LEFT);
             } else {
                 // Si es el primer estudiante del año para esa carrera, comienza desde 1
                 $autoincremento = '0001';
@@ -146,7 +147,7 @@ class EstudiantesController extends Controller
 
             // Genera la matrícula del estudiante
             $matricula = $numeroCuc . $year . $carreraSuffix . $autoincremento;
-            
+
             $direccion = new Direcciones();
             $direccion->calle = $request->input('calle');
             $direccion->num_exterior = $request->input('num_exterior');
@@ -177,9 +178,9 @@ class EstudiantesController extends Controller
             $estudiante->semestre = $request->semestre;
             $estudiante->estatus = "Activo";
             $estudiante->creditos_acumulados = 0;
-            $estudiante -> clave_grupo = $request->clave_grupo;
+            $estudiante->clave_grupo = $request->clave_grupo;
 
-            if ($request->nacionalidad === '1' &&  $nacionaalidad !== '') {
+            if ($request->nacionalidad === '1' && $nacionaalidad !== '') {
                 $n = Nacionalidades::where('nombre', $nacionaalidad)->first();
 
                 if (!$n) {
@@ -189,21 +190,21 @@ class EstudiantesController extends Controller
                     $estudiante->nacionalidad()->associate($nueva_nacionalidad);
                 } else {
                     $estudiante->nacionalidad()->associate($n);
-                    
+
                 }
-            }else{
+            } else {
                 $estudiante->id_nacionalidad = $request->nacionalidad;
             }
 
-            if($nacionalidad !== '2'){
+            if ($nacionalidad !== '2') {
                 $estudiante->curp = '';
-                $estudiante->estado_nacimiento= '33';
-            }else {
+                $estudiante->estado_nacimiento = '33';
+            } else {
                 $estudiante->curp = $request->curp;
-                $estudiante->estado_nacimiento= $request->estado_nacimiento;
+                $estudiante->estado_nacimiento = $request->estado_nacimiento;
             }
 
-            if ($request->lengua_indigena === '2' &&  $lengua !== '') {
+            if ($request->lengua_indigena === '2' && $lengua !== '') {
                 $l = LenguasIndigenas::where('nombre', $lengua)->first();
 
                 if (!$l) {
@@ -213,24 +214,24 @@ class EstudiantesController extends Controller
                     $estudiante->lenguaindigena()->associate($nueva_lengua);
                 } else {
                     $estudiante->lenguaindigena()->associate($l);
-                    
+
                 }
-            }else{
+            } else {
                 $estudiante->id_lenguaindigena = $request->lengua_indigena;
             }
 
-            if ($request->pueblo_indigena === '2' &&  $pueblo !== '') {
+            if ($request->pueblo_indigena === '2' && $pueblo !== '') {
                 $p = PueblosIndigenas::where('nombre', $pueblo)->first();
-                
+
                 if (!$p) {
                     $nuevo_pueblo = new PueblosIndigenas();
-                    $nuevo_pueblo->nombre =$request->otro_pueblo;
+                    $nuevo_pueblo->nombre = $request->otro_pueblo;
                     $nuevo_pueblo->save();
                     $estudiante->puebloindigena()->associate($nuevo_pueblo);
                 } else {
                     $estudiante->puebloindigena()->associate($p);
                 }
-            }else{
+            } else {
                 $estudiante->id_puebloindigena = $request->pueblo_indigena;
             }
 
@@ -270,8 +271,18 @@ class EstudiantesController extends Controller
         try {
             $usuarioEscolar = auth()->user();
             $claveCucEscolar = $usuarioEscolar->escolar->clave_cuc;
-            $estudiante = Estudiantes::with('usuario.rol','grupo' ,'direccion.colonia.cp',
-                'direccion.colonia.municipio.estado', 'tiposangre','lenguaindigena','puebloindigena', 'nacionalidad', 'estado', 'documento')->findOrFail($id);
+            $estudiante = Estudiantes::with(
+                'usuario.rol',
+                'grupo',
+                'direccion.colonia.cp',
+                'direccion.colonia.municipio.estado',
+                'tiposangre',
+                'lenguaindigena',
+                'puebloindigena',
+                'nacionalidad',
+                'estado',
+                'documento'
+            )->findOrFail($id);
             $cuc = Cucs::where('clave_cuc', $claveCucEscolar)->first();
             $grupoEstudiante = $estudiante->grupo;
 
@@ -312,35 +323,35 @@ class EstudiantesController extends Controller
             return ApiResponses::error('Error: ' . $e->getMessage(), 404);
         }
     }  /**
-     * Update the specified resource in storage.
-     */
+       * Update the specified resource in storage.
+       */
     public function update(Request $request, $idEstudiante)
     {
         DB::beginTransaction();
-        try{
+        try {
             $request->validate([
-                'nombre'=> 'required',
-                'apellidopaterno'=> 'required',
-                'apellidomaterno'=> 'required',
-                'edad'=> 'required',
-                'sexo'=> 'required',
-                'fecha_nacimiento'=> 'required',
-                'niveleducativo'=> 'required',
-                'telefono'=> 'required',
-                'telefono_emergencia'=> 'required',
+                'nombre' => 'required',
+                'apellidopaterno' => 'required',
+                'apellidomaterno' => 'required',
+                'edad' => 'required',
+                'sexo' => 'required',
+                'fecha_nacimiento' => 'required',
+                'niveleducativo' => 'required',
+                'telefono' => 'required',
+                'telefono_emergencia' => 'required',
                 'num_exterior' => 'required',
                 'calle' => 'required',
                 'colonia' => 'required',
-                'nacionalidad'=> 'required',
-                'id_tiposangre'=> 'required',
-                'padecimiento'=> 'required',
-                'discapacidad'=> 'required',
-                'regular'=> 'required',
-                'semestre'=> 'required',
-                'estatus'=> 'required',
-                'lengua_indigena'=> 'required',
-                'pueblo_indigena'=> 'required',
-                'clave_grupo'=> 'required|exists:grupos,clave_grupo',
+                'nacionalidad' => 'required',
+                'id_tiposangre' => 'required',
+                'padecimiento' => 'required',
+                'discapacidad' => 'required',
+                'regular' => 'required',
+                'semestre' => 'required',
+                'estatus' => 'required',
+                'lengua_indigena' => 'required',
+                'pueblo_indigena' => 'required',
+                'clave_grupo' => 'required|exists:grupos,clave_grupo',
                 'email' => 'required',
                 'otro_pueblo',
                 'otra_lengua',
@@ -375,7 +386,7 @@ class EstudiantesController extends Controller
             $estudiante->semestre = $request->semestre;
             $estudiante->estatus = $request->estatus;
 
-            if ($request->nacionalidad === '1' &&  $nacionaalidad !== '') {
+            if ($request->nacionalidad === '1' && $nacionaalidad !== '') {
                 $n = Nacionalidades::where('nombre', $nacionaalidad)->first();
 
                 if (!$n) {
@@ -385,21 +396,21 @@ class EstudiantesController extends Controller
                     $estudiante->nacionalidad()->associate($nueva_nacionalidad);
                 } else {
                     $estudiante->nacionalidad()->associate($n);
-                    
+
                 }
-            }else{
+            } else {
                 $estudiante->id_nacionalidad = $request->nacionalidad;
             }
 
-            if($nacionalidad !== '2'){
+            if ($nacionalidad !== '2') {
                 $estudiante->curp = '';
-                $estudiante->estado_nacimiento= '33';
-            }else {
+                $estudiante->estado_nacimiento = '33';
+            } else {
                 $estudiante->curp = $request->curp;
-                $estudiante->estado_nacimiento= $request->estado_nacimiento;
+                $estudiante->estado_nacimiento = $request->estado_nacimiento;
             }
 
-            if ($request->lengua_indigena === '2' &&  $lengua !== '') {
+            if ($request->lengua_indigena === '2' && $lengua !== '') {
                 $l = LenguasIndigenas::where('nombre', $lengua)->first();
 
                 if (!$l) {
@@ -409,33 +420,33 @@ class EstudiantesController extends Controller
                     $estudiante->lenguaindigena()->associate($nueva_lengua);
                 } else {
                     $estudiante->lenguaindigena()->associate($l);
-                    
+
                 }
-            }else{
+            } else {
                 $estudiante->id_lenguaindigena = $request->lengua_indigena;
             }
 
-            if ($request->pueblo_indigena === '2' &&  $pueblo !== '') {
+            if ($request->pueblo_indigena === '2' && $pueblo !== '') {
                 $p = PueblosIndigenas::where('nombre', $pueblo)->first();
-                
+
                 if (!$p) {
                     $nuevo_pueblo = new PueblosIndigenas();
-                    $nuevo_pueblo->nombre =$request->otro_pueblo;
+                    $nuevo_pueblo->nombre = $request->otro_pueblo;
                     $nuevo_pueblo->save();
                     $estudiante->puebloindigena()->associate($nuevo_pueblo);
                 } else {
                     $estudiante->puebloindigena()->associate($p);
                 }
-            }else{
+            } else {
                 $estudiante->id_puebloindigena = $request->pueblo_indigena;
             }
-            
-            $estudiante -> clave_grupo = $request->clave_grupo;
+
+            $estudiante->clave_grupo = $request->clave_grupo;
             $direccion->calle = $request->input('calle');
             $direccion->num_exterior = $request->input('num_exterior');
             $direccion->id_colonia = $request->input('colonia');
             $direccion->update();
-            $estudiante->update();            
+            $estudiante->update();
 
             DB::commit();
             return ApiResponses::success('Actualizado', 201);
@@ -490,7 +501,7 @@ class EstudiantesController extends Controller
             if ($rol === 'consejero') {
                 // Obtener la clave_cuc del consejero
                 $claveCuc = $usuarios->consejero->clave_cuc;
-            }else if($rol === 'escolar'){
+            } else if ($rol === 'escolar') {
                 $claveCuc = $usuarios->escolar->clave_cuc;
             }
             $cuc = Cucs::findOrfail($claveCuc);
@@ -499,7 +510,7 @@ class EstudiantesController extends Controller
             $estudiantes = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])->get();
 
             $totalEstudiantes = $estudiantes->count();
-            
+
             $totalMujeres = $estudiantes->where('sexo', 'M')->count();
             $totalHombres = $estudiantes->where('sexo', 'H')->count();
             $totalEstudiantesLengua = $estudiantes->where('id_lenguaindigena', '!=', 1)->count();
@@ -510,31 +521,33 @@ class EstudiantesController extends Controller
             $totalEstudiantesNoMexicanos = $estudiantes->where('id_nacionalidad', '!=', 2)->count();
 
             $totalEstudiantesDiscapacidad = $estudiantes->filter(function ($estudiantes) {
-                return strcasecmp($estudiantes->discapacidad, 'ninguno') !== 0;})->count();
+                return strcasecmp($estudiantes->discapacidad, 'ninguno') !== 0;
+            })->count();
             $totalEstudiantesDiscapacidadNinguna = $estudiantes->filter(function ($estudiantes) {
-                return strcasecmp($estudiantes->discapacidad, 'ninguno') == 0;})->count();
-            
-                $resultados = [];
-                // Obtener todas las carreras asociadas al CUC
-                $carreras = Carreras::whereHas('grupos', function ($query) use ($claveCuc) {
-                    $query->where('clave_grupo', 'like', substr($claveCuc, 7, 9) . '%');
-                })->get();
-    
-                foreach ($carreras as $carrera) {
-                    // Obtener todos los grupos asociados a la carrera y al CUC
-                    $grupos = Grupos::where('clave_carrera', $carrera->clave_carrera)
-                        ->where('clave_grupo', 'like', substr($claveCuc, 7, 9) . '%')
-                        ->get();
-                    $totalEstudiantess = 0;
-                    foreach ($grupos as $grupo) {
-                        // Obtener todos los estudiantes asociados al grupo
-                        $estudiantess = Estudiantes::where('clave_grupo', $grupo->clave_grupo)->get();
-                        // Sumar la cantidad de estudiantes en el grupo actual
-                        $totalEstudiantess += $estudiantess->count();
-                    }
-                    // Almacenar el resultado en el arreglo incluso si no hay estudiantes
-                    $resultados[$carrera->nombre] = $totalEstudiantess;
+                return strcasecmp($estudiantes->discapacidad, 'ninguno') == 0;
+            })->count();
+
+            $resultados = [];
+            // Obtener todas las carreras asociadas al CUC
+            $carreras = Carreras::whereHas('grupos', function ($query) use ($claveCuc) {
+                $query->where('clave_grupo', 'like', substr($claveCuc, 7, 9) . '%');
+            })->get();
+
+            foreach ($carreras as $carrera) {
+                // Obtener todos los grupos asociados a la carrera y al CUC
+                $grupos = Grupos::where('clave_carrera', $carrera->clave_carrera)
+                    ->where('clave_grupo', 'like', substr($claveCuc, 7, 9) . '%')
+                    ->get();
+                $totalEstudiantess = 0;
+                foreach ($grupos as $grupo) {
+                    // Obtener todos los estudiantes asociados al grupo
+                    $estudiantess = Estudiantes::where('clave_grupo', $grupo->clave_grupo)->get();
+                    // Sumar la cantidad de estudiantes en el grupo actual
+                    $totalEstudiantess += $estudiantess->count();
                 }
+                // Almacenar el resultado en el arreglo incluso si no hay estudiantes
+                $resultados[$carrera->nombre] = $totalEstudiantess;
+            }
 
             return ApiResponses::success('Numero de Estudiantes', 200, [
                 'total_estudiantes' => $totalEstudiantes,
@@ -566,7 +579,7 @@ class EstudiantesController extends Controller
             $estudiantes = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])->get();
 
             $totalEstudiantes = $estudiantes->count();
-            
+
             $totalMujeres = $estudiantes->where('sexo', 'M')->count();
             $totalHombres = $estudiantes->where('sexo', 'H')->count();
             $totalEstudiantesLengua = $estudiantes->where('id_lenguaindigena', '!=', 1)->count();
@@ -577,9 +590,11 @@ class EstudiantesController extends Controller
             $totalEstudiantesNoMexicanos = $estudiantes->where('id_nacionalidad', '!=', 2)->count();
 
             $totalEstudiantesDiscapacidad = $estudiantes->filter(function ($estudiantes) {
-                return strcasecmp($estudiantes->discapacidad, 'ninguno') !== 0;})->count();
+                return strcasecmp($estudiantes->discapacidad, 'ninguno') !== 0;
+            })->count();
             $totalEstudiantesDiscapacidadNinguna = $estudiantes->filter(function ($estudiantes) {
-                return strcasecmp($estudiantes->discapacidad, 'ninguno') == 0;})->count();
+                return strcasecmp($estudiantes->discapacidad, 'ninguno') == 0;
+            })->count();
 
             return ApiResponses::success('Numero de Estudiantes', 200, [
                 'total_estudiantes' => $totalEstudiantes,
@@ -603,7 +618,8 @@ class EstudiantesController extends Controller
     public function totEstudiantes()
     {
         try {
-            $estudiante = Estudiantes::all();;
+            $estudiante = Estudiantes::all();
+            ;
             $totalEstudiantess = $estudiante->count();
             $totalMujeres = $estudiante->where('sexo', 'M')->count();
             $totalHombres = $estudiante->where('sexo', 'H')->count();
@@ -615,32 +631,34 @@ class EstudiantesController extends Controller
             $totalEstudiantesNoMexicanos = $estudiante->where('id_nacionalidad', '!=', 2)->count();
 
             $totalEstudiantesDiscapacidad = $estudiante->filter(function ($estudiante) {
-                return strcasecmp($estudiante->discapacidad, 'ninguno') !== 0;})->count();  
+                return strcasecmp($estudiante->discapacidad, 'ninguno') !== 0;
+            })->count();
             $totalEstudiantesDiscapacidadNinguna = $estudiante->filter(function ($estudiante) {
-                return strcasecmp($estudiante->discapacidad, 'ninguno') == 0;})->count();
+                return strcasecmp($estudiante->discapacidad, 'ninguno') == 0;
+            })->count();
 
-                $resultados = [];
+            $resultados = [];
 
-                // Obtener todas las carreras
-                $carreras = Carreras::all();
-    
-                foreach ($carreras as $carrera) {
-                    // Obtener todos los grupos asociados a la carrera
-                    $grupos = Grupos::where('clave_carrera', $carrera->clave_carrera)->get();
-    
-                    $totalEstudiantes = 0;
-    
-                    foreach ($grupos as $grupo) {
-                        // Obtener todos los estudiantes asociados al grupo
-                        $estudiantes = Estudiantes::where('clave_grupo', $grupo->clave_grupo)->get();
-    
-                        // Sumar la cantidad de estudiantes en el grupo actual
-                        $totalEstudiantes += $estudiantes->count();
-                    }
-    
-                    // Almacenar el resultado en el arreglo incluso si no hay estudiantes
-                    $resultados[$carrera->nombre] = $totalEstudiantes;
+            // Obtener todas las carreras
+            $carreras = Carreras::all();
+
+            foreach ($carreras as $carrera) {
+                // Obtener todos los grupos asociados a la carrera
+                $grupos = Grupos::where('clave_carrera', $carrera->clave_carrera)->get();
+
+                $totalEstudiantes = 0;
+
+                foreach ($grupos as $grupo) {
+                    // Obtener todos los estudiantes asociados al grupo
+                    $estudiantes = Estudiantes::where('clave_grupo', $grupo->clave_grupo)->get();
+
+                    // Sumar la cantidad de estudiantes en el grupo actual
+                    $totalEstudiantes += $estudiantes->count();
                 }
+
+                // Almacenar el resultado en el arreglo incluso si no hay estudiantes
+                $resultados[$carrera->nombre] = $totalEstudiantes;
+            }
 
 
             return ApiResponses::success('Numero de Estudiantes', 200, [
@@ -678,7 +696,7 @@ class EstudiantesController extends Controller
             foreach ($grupos as $grupo) {
                 $claveGrupo = $grupo->clave_grupo;
                 // Verificar si los dos primeros caracteres coinciden con $claveCuc
-                if ((int)substr($claveGrupo, 0, 2) === (int)substr($claveCucEscolar, 7, 9)) {
+                if ((int) substr($claveGrupo, 0, 2) === (int) substr($claveCucEscolar, 7, 9)) {
                     $totalEstudiantes += Estudiantes::where('clave_grupo', $claveGrupo)->count();
                 }
             }
@@ -702,7 +720,7 @@ class EstudiantesController extends Controller
             foreach ($grupos as $grupo) {
                 $claveGrupo = $grupo->clave_grupo;
                 // Verificar si los dos primeros caracteres coinciden con $claveCuc
-                if ((int)substr($claveGrupo, 0, 2) === (int)substr($claveCuc, 7, 9)) {
+                if ((int) substr($claveGrupo, 0, 2) === (int) substr($claveCuc, 7, 9)) {
                     $totalEstudiantes += Estudiantes::where('clave_grupo', $claveGrupo)->count();
                 }
             }
@@ -756,7 +774,7 @@ class EstudiantesController extends Controller
             }
 
             // Devolver la respuesta exitosa con los resultados
-            return ApiResponses::success('Total de estudiantes por programa', 200,[$resultados]);
+            return ApiResponses::success('Total de estudiantes por programa', 200, [$resultados]);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('No encontrado', 404);
         } catch (Exception $e) {
@@ -772,7 +790,7 @@ class EstudiantesController extends Controller
 
             if ($rol === 'consejero') {
                 $claveCuc = $usuarios->consejero->clave_cuc;
-            }else if($rol === 'escolar'){
+            } else if ($rol === 'escolar') {
                 $claveCuc = $usuarios->escolar->clave_cuc;
             }
             $resultados = [];
@@ -807,66 +825,76 @@ class EstudiantesController extends Controller
 
     public function servicioEstatus($id)
     {
-      try {
-       
-        // Buscar el estudiante por su ID
-        $estudiante = Estudiantes::findOrFail($id);
-    
-        return ApiResponses::success('Encontrado', 200, $estudiante->servicio_estatus);
-      } catch (ModelNotFoundException $e) {
-        return ApiResponses::error('Estudiante no encontrado', 404);
-      } catch (Exception $e) { // Capturar cualquier otra excepción
-        return ApiResponses::error('Error interno del servidor', 500);
-      }
+        try {
+
+            // Buscar el estudiante por su ID
+            $estudiante = Estudiantes::findOrFail($id);
+
+            return ApiResponses::success('Encontrado', 200, $estudiante->servicio_estatus);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
     }
 
     public function matriculaActual()
     {
-        
-try{
 
-        $user = Auth::user();
-        $id = $user->id;
+        try {
 
-       // $estudiante = Estudiantes::findOrFail($id);
-        $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+            $user = Auth::user();
+            $id = $user->id;
 
-        return ApiResponses::success('Encontrado', 200,$estudiante->matricula);
-    } catch (ModelNotFoundException $e) {
-      return ApiResponses::error('Estudiante no encontrado', 404);
-    } catch (Exception $e) { // Capturar cualquier otra excepción
-      return ApiResponses::error('Error interno del servidor', 500);
-    }
+            // $estudiante = Estudiantes::findOrFail($id);
+            $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
+            return ApiResponses::success('Encontrado', 200, $estudiante->matricula);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
     }
 
 
     public function infoPersonal()
     {
         try {
-           
+
             $user = Auth::user();
             $id = $user->id;
-    
-           // $estudiante = Estudiantes::findOrFail($id);
-          $estudia = Estudiantes::where('id', $id)->firstOrFail();
 
-          $matricula = $estudia->matricula;
+            // $estudiante = Estudiantes::findOrFail($id);
+            $estudia = Estudiantes::where('id', $id)->firstOrFail();
+
+            $matricula = $estudia->matricula;
 
 
 
-          $estudiante = Estudiantes::with('usuario.rol','grupo' ,'direccion.colonia.cp',
-          'direccion.colonia.municipio.estado', 'tiposangre','lenguaindigena','puebloindigena', 'nacionalidad', 'estado', 'documento')->findOrFail($matricula);
+            $estudiante = Estudiantes::with(
+                'usuario.rol',
+                'grupo',
+                'direccion.colonia.cp',
+                'direccion.colonia.municipio.estado',
+                'tiposangre',
+                'lenguaindigena',
+                'puebloindigena',
+                'nacionalidad',
+                'estado',
+                'documento'
+            )->findOrFail($matricula);
 
-    
+
             // Buscar al estudiante por su matrícula y cargar las relaciones necesarias
 //$estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
 
-return ApiResponses::success('Encontrado', 200,$estudiante);
-} catch (ModelNotFoundException $e) {
-  return ApiResponses::error('Estudiante no encontrado', 404);
-} catch (Exception $e) { // Capturar cualquier otra excepción
-  return ApiResponses::error('Error interno del servidor', 500);
-}
+            return ApiResponses::success('Encontrado', 200, $estudiante);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
     }
 
 
@@ -875,30 +903,30 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
     public function actualizaInfo(Request $request, $idEstudiante)
     {
         DB::beginTransaction();
-        try{
+        try {
             $request->validate([
-                'nombre'=> 'required',
-                'apellidopaterno'=> 'required',
-                'apellidomaterno'=> 'required',
-                'edad'=> 'required',
-                'sexo'=> 'required',
-                'fecha_nacimiento'=> 'required',
-                'niveleducativo'=> 'required',
-                'telefono'=> 'required',
-                'telefono_emergencia'=> 'required',
+                'nombre' => 'required',
+                'apellidopaterno' => 'required',
+                'apellidomaterno' => 'required',
+                'edad' => 'required',
+                'sexo' => 'required',
+                'fecha_nacimiento' => 'required',
+                'niveleducativo' => 'required',
+                'telefono' => 'required',
+                'telefono_emergencia' => 'required',
                 'num_exterior' => 'required',
                 'calle' => 'required',
                 'colonia' => 'required',
-                'nacionalidad'=> 'required',
-                'id_tiposangre'=> 'required',
-                'padecimiento'=> 'required',
-                'discapacidad'=> 'required',
-                'regular'=> 'required',
-                'semestre'=> 'required',
-                'estatus'=> 'required',
-                'lengua_indigena'=> 'required',
-                'pueblo_indigena'=> 'required',
-                'clave_grupo'=> 'required|exists:grupos,clave_grupo',
+                'nacionalidad' => 'required',
+                'id_tiposangre' => 'required',
+                'padecimiento' => 'required',
+                'discapacidad' => 'required',
+                'regular' => 'required',
+                'semestre' => 'required',
+                'estatus' => 'required',
+                'lengua_indigena' => 'required',
+                'pueblo_indigena' => 'required',
+                'clave_grupo' => 'required|exists:grupos,clave_grupo',
                 'email' => 'required',
                 'otro_pueblo',
                 'otra_lengua',
@@ -933,7 +961,7 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
             $estudiante->semestre = $request->semestre;
             $estudiante->estatus = $request->estatus;
 
-            if ($request->nacionalidad === '1' &&  $nacionaalidad !== '') {
+            if ($request->nacionalidad === '1' && $nacionaalidad !== '') {
                 $n = Nacionalidades::where('nombre', $nacionaalidad)->first();
 
                 if (!$n) {
@@ -943,21 +971,21 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
                     $estudiante->nacionalidad()->associate($nueva_nacionalidad);
                 } else {
                     $estudiante->nacionalidad()->associate($n);
-                    
+
                 }
-            }else{
+            } else {
                 $estudiante->id_nacionalidad = $request->nacionalidad;
             }
 
-            if($nacionalidad !== '2'){
+            if ($nacionalidad !== '2') {
                 $estudiante->curp = '';
-                $estudiante->estado_nacimiento= '33';
-            }else {
+                $estudiante->estado_nacimiento = '33';
+            } else {
                 $estudiante->curp = $request->curp;
-                $estudiante->estado_nacimiento= $request->estado_nacimiento;
+                $estudiante->estado_nacimiento = $request->estado_nacimiento;
             }
 
-            if ($request->lengua_indigena === '2' &&  $lengua !== '') {
+            if ($request->lengua_indigena === '2' && $lengua !== '') {
                 $l = LenguasIndigenas::where('nombre', $lengua)->first();
 
                 if (!$l) {
@@ -967,33 +995,33 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
                     $estudiante->lenguaindigena()->associate($nueva_lengua);
                 } else {
                     $estudiante->lenguaindigena()->associate($l);
-                    
+
                 }
-            }else{
+            } else {
                 $estudiante->id_lenguaindigena = $request->lengua_indigena;
             }
 
-            if ($request->pueblo_indigena === '2' &&  $pueblo !== '') {
+            if ($request->pueblo_indigena === '2' && $pueblo !== '') {
                 $p = PueblosIndigenas::where('nombre', $pueblo)->first();
-                
+
                 if (!$p) {
                     $nuevo_pueblo = new PueblosIndigenas();
-                    $nuevo_pueblo->nombre =$request->otro_pueblo;
+                    $nuevo_pueblo->nombre = $request->otro_pueblo;
                     $nuevo_pueblo->save();
                     $estudiante->puebloindigena()->associate($nuevo_pueblo);
                 } else {
                     $estudiante->puebloindigena()->associate($p);
                 }
-            }else{
+            } else {
                 $estudiante->id_puebloindigena = $request->pueblo_indigena;
             }
-            
-            $estudiante -> clave_grupo = $request->clave_grupo;
+
+            $estudiante->clave_grupo = $request->clave_grupo;
             $direccion->calle = $request->input('calle');
             $direccion->num_exterior = $request->input('num_exterior');
             $direccion->id_colonia = $request->input('colonia');
             $direccion->update();
-            $estudiante->update();            
+            $estudiante->update();
 
             DB::commit();
             return ApiResponses::success('Actualizado', 201);
@@ -1010,43 +1038,71 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
 
     public function obtenerEnvio()
     {
-      try {
-       
-        $user = Auth::user();
-        $id = $user->id;
-    
-        
+        try {
 
-        // $estudiante = Estudiantes::findOrFail($id);
-       $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+            $user = Auth::user();
+            $id = $user->id;
 
-       $envio = $estudiante->estatus_envio;
-    
-        return ApiResponses::success('Envio', 200, $envio);
-      } catch (ModelNotFoundException $e) {
-        return ApiResponses::error('Estudiante no encontrado', 404);
-      } catch (Exception $e) { // Capturar cualquier otra excepción
-        return ApiResponses::error('Error interno del servidor', 500);
-      }
+
+
+            // $estudiante = Estudiantes::findOrFail($id);
+            $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
+            $envio = $estudiante->estatus_envio;
+
+            return ApiResponses::success('Envio', 200, $envio);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
     }
 
-    
+
+    public function obtenerEstatusServicio()
+    {
+        try {
+
+            $user = Auth::user();
+            $id = $user->id;
+
+
+
+            // $estudiante = Estudiantes::findOrFail($id);
+            $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
+            $estado = $estudiante->servicio_estatus;
+
+            return ApiResponses::success('Estado', 200, $estado);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
+    }
+
+
+
+
+
+
+
     public function enviadoEstatus()
     {
         try {
 
             $user = Auth::user();
             $id = $user->id;
-        
-            
-    
+
+
+
             // $estudiante = Estudiantes::findOrFail($id);
-           $estudiante = Estudiantes::where('id', $id)->firstOrFail();
-    
+            $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
 
             $estudiante->estatus_envio = 1;
             $estudiante->save();
-    
+
             return ApiResponses::success('Estatus enviado ', 200, $estudiante->estatus_envio);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('Estudiante no encontrado', 404);
@@ -1060,12 +1116,12 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
         try {
 
             // $estudiante = Estudiantes::findOrFail($id);
-           $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
-    
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
 
             $estudiante->estatus_envio = $estado;
             $estudiante->save();
-    
+
             return ApiResponses::success('Estatus se cambio', 200, $estudiante->estatus_envio);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('Estudiante no encontrado', 404);
@@ -1079,12 +1135,12 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
         try {
 
             // $estudiante = Estudiantes::findOrFail($id);
-           $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
-    
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
 
             $estudiante->comentario = $comentario;
             $estudiante->save();
-    
+
             return ApiResponses::success('Comentario Enviado', 200, $estudiante->comentario);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('Estudiante no encontrado', 404);
@@ -1094,71 +1150,68 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
     }
 
 
-
-
-
     public function obtenerEnvioInfo($matricula)
     {
-      try {
-       
-        $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+        try {
+
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
 
 
-       $envio = $estudiante->estatus_envio;
-    
-        return ApiResponses::success('Envio', 200, $envio);
-      } catch (ModelNotFoundException $e) {
-        return ApiResponses::error('Estudiante no encontrado', 404);
-      } catch (Exception $e) { // Capturar cualquier otra excepción
-        return ApiResponses::error('Error interno del servidor', 500);
-      }
+            $envio = $estudiante->estatus_envio;
+
+            return ApiResponses::success('Envio', 200, $envio);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
     }
 
 
 
-    
+
     public function infoPage()
     {
         try {
             $user = Auth::user();
             $id = $user->id;
 
-            $email= $user->email;
+            $email = $user->email;
 
 
             $estudiante = Estudiantes::with(
                 'grupo.carrera'
-                
+
             )->where('id', $id)->firstOrFail();
 
             $carrera = $estudiante->grupo->clave_carrera;
 
-           $cuc = cuc_carrera::where('clave_carrera', $carrera)->first();
-           $claveCuc = $cuc->clave_cuc;
-            
-
-           $c=Cucs::where('clave_cuc', $claveCuc)->first();
-           $nombre = $c->nombre;
+            $cuc = cuc_carrera::where('clave_carrera', $carrera)->first();
+            $claveCuc = $cuc->clave_cuc;
 
 
-           $estudianteData = [
-            'matricula' =>$estudiante->matricula,
-            'apellido_paterno' => $estudiante->apellido_paterno,
-            'apellido_materno' => $estudiante->apellido_materno,
-            'nombre' => $estudiante->nombre,
-            'correo' => $email,
-            'semestre' => $estudiante->semestre,
-            'carrera' => $estudiante->grupo->carrera->nombre,
-            'cuc' =>$nombre
-            // Agrega más campos aquí si es necesario
-        ];
+            $c = Cucs::where('clave_cuc', $claveCuc)->first();
+            $nombre = $c->nombre;
+
+
+            $estudianteData = [
+                'matricula' => $estudiante->matricula,
+                'apellido_paterno' => $estudiante->apellido_paterno,
+                'apellido_materno' => $estudiante->apellido_materno,
+                'nombre' => $estudiante->nombre,
+                'correo' => $email,
+                'semestre' => $estudiante->semestre,
+                'carrera' => $estudiante->grupo->carrera->nombre,
+                'cuc' => $nombre
+                // Agrega más campos aquí si es necesario
+            ];
 
 
 
-           $response = [
-            'estudiante' => $estudianteData,
-            'nombre' => $nombre
-        ];
+            $response = [
+                'estudiante' => $estudianteData,
+                'nombre' => $nombre
+            ];
 
 
             // Si se encuentra el servicio, devolver una respuesta exitosa
@@ -1176,44 +1229,44 @@ return ApiResponses::success('Encontrado', 200,$estudiante);
 
     public function obtenerEstado($matricula)
     {
-      try {
-       
-       
-       $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+        try {
 
-       $envio = $estudiante->estatus_envio;
-    
-        return ApiResponses::success('Envio', 200, $envio);
-      } catch (ModelNotFoundException $e) {
-        return ApiResponses::error('Estudiante no encontrado', 404);
-      } catch (Exception $e) { // Capturar cualquier otra excepción
-        return ApiResponses::error('Error interno del servidor', 500);
-      }
+
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+            $envio = $estudiante->estatus_envio;
+
+            return ApiResponses::success('Envio', 200, $envio);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
     }
 
 
 
-    public function obtenerComentario( )
+    public function obtenerComentario()
     {
-      try {
-        
-       
- $user = Auth::user();
- $id = $user->id;
+        try {
 
- 
 
- // $estudiante = Estudiantes::findOrFail($id);
-$estudiante = Estudiantes::where('id', $id)->firstOrFail();
+            $user = Auth::user();
+            $id = $user->id;
 
-$comentario = $estudiante->comentario;
 
- return ApiResponses::success('Envio', 200, $comentario);
-      } catch (ModelNotFoundException $e) {
-        return ApiResponses::error('Estudiante no encontrado', 404);
-      } catch (Exception $e) { // Capturar cualquier otra excepción
-        return ApiResponses::error('Error interno del servidor', 500);
-      }
+
+            // $estudiante = Estudiantes::findOrFail($id);
+            $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+
+            $comentario = $estudiante->comentario;
+
+            return ApiResponses::success('Envio', 200, $comentario);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
     }
 
 

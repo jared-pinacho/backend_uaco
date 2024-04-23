@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('carta_presentacion', 100);
             $table->string('carta_aceptacion', 100);
             $table->integer('estatus_envio')->default(0);
-            $table->string('com_pres', 100);
-            $table->string('come_acep', 100);
+            $table->string('com_pres', 255)->nullable();
+            $table->string('come_acep', 255)->nullable();
             $table->bigInteger('id_servicio')->unsigned();
 
 

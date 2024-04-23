@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('matricula');
             $table->string('matricula_escolar')->nullable();
             $table->integer('estatus_envio')->default(1);
-            $table->string('comentario',250)->nullable();
+            $table->string('comentario',255)->nullable();
             $table->foreign('id_direccion')->references('id_direccion')->on('direcciones');
 
             $table->foreign('matricula_escolar')->references('matricula')->on('escolares');

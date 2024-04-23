@@ -39,7 +39,7 @@ return new class extends Migration
             $table->BigInteger('id')->unsigned();
             $table->boolean('servicio_estatus')->default(false); 
             $table->integer('estatus_envio')->default(0);
-            $table->string('comentario',255);
+            $table->string('comentario',255)->nullable();
             $table->foreign('estado_nacimiento')->references('id_estado')->on('estados');
             $table->foreign('id_direccion')->references('id_direccion')->on('direcciones');
             $table->foreign('id_tiposangre')->references('id_tiposangre')->on('tipo_sangres');
