@@ -137,7 +137,7 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::patch('obc/estudiantes/matricula/cancelar/{id}', [CucsController::class, 'cancelarServicio']);
     Route::patch('estudiante/estatus/revisado/{id}', [CucsController::class, 'revisadoEstatus']);
     Route::get('/estado/estudiante/envio/{id}',[EstudiantesController::class,'obtenerEnvioInfo']);
-
+    Route::get('/estado/estudiante/servicio/{id}',[EstudiantesController::class,'obtenerServicioInfo']);
 
 
     Route::get('/obe/clases/clasess', [CucsController::class, 'clasesDeCuc']);
@@ -274,6 +274,8 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
     Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
     Route::put('/foraneos/{id}', [ForaneoController::class, 'update']);
+
+    Route::get('/obten/info/general/{matricula}', [ServicioController::class, 'infoGeneral']);
 });
 
 Route::middleware(['auth:sanctum', 'checkFacilitadorRole'])->group(function () {
@@ -314,6 +316,7 @@ Route::middleware(['auth:sanctum', 'checkEstudiantesRole'])->group(function () {
     Route::get('/comentario', [EstudiantesController::class,'obtenerComentario']);
     Route::get('/comentario/social', [ServicioController::class,'obtenerComentarioSocial']);
     Route::put('/actualiza/info/social/{matricula}', [ServicioController::class, 'actualizaInfoSocial']);
+    Route::get('/info/estado', [EstudiantesController::class, 'obtenerEstadoTramite']);
     //Route::get('/estudiantes/pertenece/prueba', [ClasesController::class, 'periodoDeEstudiantesPorClasesPrueba']);
 });
 

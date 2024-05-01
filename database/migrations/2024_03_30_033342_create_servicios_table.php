@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('tipo_dep',20);
             $table->string('nombre_dep',100);
             $table->string('titular_dep',100);
-            $table->string('cargo_tit',40);
+            $table->string('cargo_tit',140);
             $table->string('grado_tit',20);
             $table->string('responsable',100);
             $table->string('programa',100);

@@ -90,10 +90,10 @@ class ConsejerosController extends Controller
                 $usuario->password = $request->password;
                 $usuario->id_rol = 3;
                 $usuario->save();
-                $consejero->usuario()->associate($usuario);
-            }else {
-                $consejero->id='3';
-            }
+                $consejero->usuario()->associate($usuario);}
+            // }else {
+            //     $consejero->id=0;
+            // }
             
             
             $consejero->matricula = $request->input('matricula');

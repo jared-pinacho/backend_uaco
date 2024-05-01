@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Responses\ApiResponses;
+use App\Models\Consejeros;
+use App\Models\cuc_carrera;
 use App\Models\Estudiantes;
 use App\Models\User;
 use App\Models\Cucs;
@@ -209,6 +211,14 @@ class ServicioController extends Controller
     
 
             $servicio->estatus_envio = $estado;
+
+            if ($estado == 2) {
+
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+                $estudiante->estado_tramite = "Información de servicio";
+                $estudiante->save();
+            }
+    
             $servicio->save();
     
             return ApiResponses::success('Estatus se cambio', 200, $servicio->estatus_envio);
@@ -359,7 +369,70 @@ class ServicioController extends Controller
 
 
 
+    public function infoGeneral($dato)
+    {
+        try {
+            
 
+            // Buscar el servicio por matrícula del estudiante
+            $servicio = Servicio::with(
+                'direccion.colonia.cp',
+                'direccion.colonia.municipio.estado'
+            )->where('matricula', $dato)->firstOrFail();
+
+
+           
+            $estudiante = Estudiantes::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono', 'semestre','clave_grupo')
+        ->where('matricula', $dato)
+        ->firstOrFail();
+
+        $mat=$estudiante->clave_grupo;
+
+        
+
+    $grupo=Grupos::where("clave_grupo",$mat)->firstOrFail();
+    $clave_carrera=$grupo->clave_carrera;
+
+    $carrera=Carreras::where('clave_carrera',$clave_carrera)->firstOrFail();
+    $nombreCarrera=$carrera->nombre;
+
+    $cuc_carrera=cuc_carrera::where('clave_carrera',$clave_carrera)->firstOrFail();
+    $a= $cuc_carrera->clave_cuc;
+
+
+
+    $cuc=Cucs::with(
+        
+        'direccion.colonia.municipio.estado'
+    )->where('clave_cuc',$a)->firstOrFail();
+
+    
+
+    $consejero= Consejeros::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono')
+    ->where('clave_cuc',$a)
+    ->firstOrFail();
+
+
+  
+
+ // Combinar datos del servicio y del estudiante
+    $datosCombinados = [
+        'servicio' => $servicio,
+        'estudiante' => $estudiante,
+        'carrera' =>$nombreCarrera,
+        'cuc' =>$cuc,
+        'consejero'=>$consejero,
+    ];
+
+            // Si se encuentra el servicio, devolver una respuesta exitosa
+            return ApiResponses::success('Servicio encontrado', 200, $datosCombinados);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            // Capturar cualquier otra excepción y devolver un error interno del servidor
+            return ApiResponses::error('Error interno del servidor: ' . $e->getMessage(), 500);
+        }
+    }
 
 
 

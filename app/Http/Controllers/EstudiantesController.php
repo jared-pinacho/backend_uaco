@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Responses\ApiResponses;
 use App\Models\Estudiantes;
+use App\Models\Servicio;
 use App\Models\User;
 use App\Models\Cucs;
 use App\Models\cuc_carrera;
@@ -1120,6 +1121,11 @@ class EstudiantesController extends Controller
 
 
             $estudiante->estatus_envio = $estado;
+            if ($estado == 2) {
+                $estudiante->estado_tramite = "Información personal";
+            }
+    
+           
             $estudiante->save();
 
             return ApiResponses::success('Estatus se cambio', 200, $estudiante->estatus_envio);
@@ -1246,6 +1252,37 @@ class EstudiantesController extends Controller
 
 
 
+    public function obtenerEstadoTramite()
+    {
+        try {
+
+            $user = Auth::user();
+            $id = $user->id;
+
+
+
+            // $estudiante = Estudiantes::findOrFail($id);
+            $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+            $matricula = $estudiante->matricula;
+
+
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+
+            $envio = $estudiante->estado_tramite;
+
+            return ApiResponses::success('Envio', 200, $envio);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
+    }
+
+
+
+
+
+
     public function obtenerComentario()
     {
         try {
@@ -1269,6 +1306,25 @@ class EstudiantesController extends Controller
         }
     }
 
+
+
+
+    public function obtenerServicioInfo($matricula)
+    {
+        try {
+
+            $servicio = Servicio::where('matricula', $matricula)->firstOrFail();
+
+
+            $estado = $servicio->estatus_envio;
+
+            return ApiResponses::success('Envio', 200, $estado);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) { // Capturar cualquier otra excepción
+            return ApiResponses::error('Error interno del servidor', 500);
+        }
+    }
 
 
 

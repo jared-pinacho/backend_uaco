@@ -62,7 +62,7 @@ class ForaneoController extends Controller
                 'edad' => 'required',
                 'sexo' => 'required',
                 'telefono' => 'required',
-                'email' => 'required',
+                'correo' => 'required',
                 'semestre' => 'required',
                 'discapacidad' => 'required',
                 'institucion' => 'required',
@@ -72,7 +72,7 @@ class ForaneoController extends Controller
                 'titular_dep' => 'required',          
                 'cargo_tit' => 'required',
                 'grado_tit' => 'required',
-                'responsable' => 'required',
+                'resp_seg' => 'required',
                 'horas' => 'required',
                 'lengua_indigena' => 'required',
                 
@@ -100,15 +100,15 @@ class ForaneoController extends Controller
             $foraneo->apellido_materno = $request->apellido_materno;
             $foraneo->edad = $request->edad;
             $foraneo->sexo = $request->sexo;
-            $foraneo->telefono = $request->grado_tit;
-            $foraneo->correo = $request->email;
+            $foraneo->telefono = $request->telefono;
+            $foraneo->correo = $request->correo;
             $foraneo->semestre = $request->semestre;
             $foraneo->discapacidad = $request->discapacidad;
             $foraneo->institucion = $request->institucion;
             $foraneo->matricula_escolar = $request->matricula_escolar;
             $foraneo->licenciatura=$request->licenciatura;
             $foraneo->programa=$request->programa;
-            $foraneo->resp_seg=$request->responsable;
+            $foraneo->resp_seg=$request->resp_seg;
             $foraneo->titular_dep=$request->titular_dep;
             $foraneo->cargo_titular=$request->cargo_tit;
             $foraneo->grado_titular=$request->grado_tit;
