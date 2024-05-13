@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Escolares;
 use App\Models\Foraneo;
 use Illuminate\Http\Request;
-
+use App\Models\Consejeros;
 use App\Http\Responses\ApiResponses;
 use App\Models\Estudiantes;
 use App\Models\User;
@@ -30,21 +30,7 @@ use App\Models\Servicio;
 
 class ForaneoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+   
 
     /**
      * Store a newly created resource in storage.efon
@@ -302,6 +288,46 @@ class ForaneoController extends Controller
          }
      }
      
+
+
+     public function infoForaneo( $dato)
+     {
+         try {
+         
+            $foraneo=Foraneo::where('id_foraneo',$dato)->firstOrFail();
+$id_cuc=$foraneo->CUC;
+
+
+
+$cuc=Cucs::with(
+        
+    'direccion.colonia.municipio.estado'
+)->where('clave_cuc',$id_cuc)->firstOrFail();
+
+
+
+$consejero= Consejeros::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono')
+->where('clave_cuc',$id_cuc)
+->firstOrFail();
+
+
+$datos = [
+    'foraneo' => $foraneo,
+    'cuc' =>$cuc,
+    'consejero'=>$consejero,
+];
+
+
+ 
+             // Si se encuentra el servicio, devolver una respuesta exitosa
+             return ApiResponses::success('Servicio encontrado', 200, $datos);
+         } catch (ModelNotFoundException $e) {
+             return ApiResponses::error('Estudiante no encontrado', 404);
+         } catch (Exception $e) {
+             // Capturar cualquier otra excepción y devolver un error interno del servidor
+             return ApiResponses::error('Error interno del servidor: ' . $e->getMessage(), 500);
+         }
+     }
 
 
 

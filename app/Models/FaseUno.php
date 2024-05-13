@@ -15,7 +15,7 @@ class FaseUno extends Model
 
   protected $primaryKey = 'id_faseUno';
 
-  protected $fillable = ['carta_presentacion','carta_aceptacion','estatus_envio','com_pres','com_acep','id_servicio'];
+  protected $fillable = ['carta_presentacion','carta_aceptacion','estatus_envio','com_pres','com_acep','id_servicio','pres_estado','acep_estado'];
 
   protected $casts = [
     'id_faseUno'=> 'string'

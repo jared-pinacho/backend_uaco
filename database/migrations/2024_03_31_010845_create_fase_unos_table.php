@@ -13,9 +13,11 @@ return new class extends Migration {
         Schema::create('fase_unos', function (Blueprint $table) {
 
             $table->bigIncrements('id_faseUno');
-            $table->string('carta_presentacion', 100);
-            $table->string('carta_aceptacion', 100);
+            $table->string('carta_presentacion', 250);
+            $table->string('carta_aceptacion', 250);
             $table->integer('estatus_envio')->default(0);
+            $table->integer('acep_estado')->default(0);
+            $table->integer('pres_estado')->default(0);
             $table->string('com_pres', 255)->nullable();
             $table->string('come_acep', 255)->nullable();
             $table->bigInteger('id_servicio')->unsigned();

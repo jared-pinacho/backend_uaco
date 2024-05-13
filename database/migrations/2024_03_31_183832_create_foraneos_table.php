@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('licenciatura',60);
             $table->string('programa',60);
             $table->string('titular_dep',100);
-            $table->string('cargo_titular',100);
+            $table->string('cargo_titular',200);
             $table->string('grado_titular',20);
             $table->string('resp_seg',200);
             $table->string('CUC',100);

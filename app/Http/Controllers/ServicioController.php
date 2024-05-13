@@ -6,17 +6,10 @@ use App\Http\Responses\ApiResponses;
 use App\Models\Consejeros;
 use App\Models\cuc_carrera;
 use App\Models\Estudiantes;
+use App\Models\FaseUno;
 use App\Models\User;
 use App\Models\Cucs;
-use App\Models\CodigoPostal;
-use App\Models\Colonia;
 use App\Models\Direcciones;
-use App\Models\Estados;
-use App\Models\Municipios;
-use App\Models\LenguasIndigenas;
-use App\Models\PueblosIndigenas;
-use App\Models\Nacionalidades;
-use App\Models\estadoDocumentacion;
 use App\Models\Grupos;
 use App\Models\Carreras;
 use Dotenv\Exception\ValidationException;
@@ -29,25 +22,6 @@ use App\Models\Servicio;
 
 class ServicioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -77,16 +51,11 @@ class ServicioController extends Controller
             $direccion->id_colonia = $request->input('colonia');
             $direccion->save();
 
-
-
             $user = Auth::user();
             $id = $user->id;
 
-            // $estudiante = Estudiantes::findOrFail($id);
             $estudiante = Estudiantes::where('id', $id)->firstOrFail();
             $matri = $estudiante->matricula;
-
-
             $servicio = new Servicio();
 
             $servicio->modalidad = $request->modalidad;
@@ -103,13 +72,8 @@ class ServicioController extends Controller
             $servicio->horas = $request->horas;
             $servicio->matricula = $matri;
 
-
-
-            // Asocia la dirección al servicio
             $servicio->direccion()->associate($direccion);
             $servicio->save();
-
-
 
             DB::commit();
             return ApiResponses::success('Registro exitoso', 201, $servicio);
@@ -369,10 +333,18 @@ class ServicioController extends Controller
 
 
 
-    public function infoGeneral($dato)
+    public function infoGeneralPropia()
     {
         try {
             
+            $user = Auth::user();
+            $id = $user->id;
+        
+            // $estudiante = Estudiantes::findOrFail($id);
+           $estudiante = Estudiantes::where('id', $id)->firstOrFail();
+           $dato = $estudiante->matricula;
+   
+
 
             // Buscar el servicio por matrícula del estudiante
             $servicio = Servicio::with(
@@ -380,7 +352,7 @@ class ServicioController extends Controller
                 'direccion.colonia.municipio.estado'
             )->where('matricula', $dato)->firstOrFail();
 
-
+           $id_ser=$servicio->id_servicio;
            
             $estudiante = Estudiantes::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono', 'semestre','clave_grupo')
         ->where('matricula', $dato)
@@ -413,7 +385,10 @@ class ServicioController extends Controller
     ->firstOrFail();
 
 
-  
+  $faseUno=FaseUno::where('id_servicio', $id_ser)->firstOrFail();
+
+
+
 
  // Combinar datos del servicio y del estudiante
     $datosCombinados = [
@@ -422,6 +397,7 @@ class ServicioController extends Controller
         'carrera' =>$nombreCarrera,
         'cuc' =>$cuc,
         'consejero'=>$consejero,
+        'faseUno'=>$faseUno,
     ];
 
             // Si se encuentra el servicio, devolver una respuesta exitosa
@@ -433,6 +409,84 @@ class ServicioController extends Controller
             return ApiResponses::error('Error interno del servidor: ' . $e->getMessage(), 500);
         }
     }
+
+
+
+
+
+
+
+
+    public function infoGeneral( $dato)
+    {
+        try {
+        
+
+
+            // Buscar el servicio por matrícula del estudiante
+            $servicio = Servicio::with(
+                'direccion.colonia.cp',
+                'direccion.colonia.municipio.estado'
+            )->where('matricula', $dato)->firstOrFail();
+
+            $id_ser=$servicio->id_servicio;
+           
+            $estudiante = Estudiantes::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono', 'semestre','clave_grupo')
+        ->where('matricula', $dato)
+        ->firstOrFail();
+
+        $mat=$estudiante->clave_grupo;
+
+        
+
+    $grupo=Grupos::where("clave_grupo",$mat)->firstOrFail();
+    $clave_carrera=$grupo->clave_carrera;
+
+    $carrera=Carreras::where('clave_carrera',$clave_carrera)->firstOrFail();
+    $nombreCarrera=$carrera->nombre;
+
+    $cuc_carrera=cuc_carrera::where('clave_carrera',$clave_carrera)->firstOrFail();
+    $a= $cuc_carrera->clave_cuc;
+
+
+
+    $cuc=Cucs::with(
+        
+        'direccion.colonia.municipio.estado'
+    )->where('clave_cuc',$a)->firstOrFail();
+
+    
+
+    $consejero= Consejeros::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono')
+    ->where('clave_cuc',$a)
+    ->firstOrFail();
+
+
+    $faseUno=FaseUno::where('id_servicio', $id_ser)->firstOrFail();
+
+ // Combinar datos del servicio y del estudiante
+    $datosCombinados = [
+        'servicio' => $servicio,
+        'estudiante' => $estudiante,
+        'carrera' =>$nombreCarrera,
+        'cuc' =>$cuc,
+        'consejero'=>$consejero,
+        'faseUno'=>$faseUno,
+    ];
+
+            // Si se encuentra el servicio, devolver una respuesta exitosa
+            return ApiResponses::success('Servicio encontrado', 200, $datosCombinados);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Estudiante no encontrado', 404);
+        } catch (Exception $e) {
+            // Capturar cualquier otra excepción y devolver un error interno del servidor
+            return ApiResponses::error('Error interno del servidor: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+
 
 
 

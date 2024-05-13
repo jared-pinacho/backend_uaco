@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\CarrerasController;
 use App\Http\Controllers\CucsController;
 use App\Http\Controllers\EstudiantesController;
+use App\Http\Controllers\FaseUnoController;
 use App\Http\Controllers\ForaneoController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\ConsejerosController;
@@ -49,6 +50,9 @@ use Laravel\Passport\Passport;
 //     return $request->user();
 // });
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/descarga/{name}', [FaseUnoController::class, 'downloadFile'])->name('download');
+
+Route::get('/archivos/{nombreArchivo}', [FaseUnoController::class, 'getArchivo']);
 
 Route::post('/olvido-contra', [AuthController::class, 'olvidoContrasena']);
 
@@ -267,15 +271,28 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::get('/obten/servicio/info/{matricula}', [ServicioController::class, 'infoServicioEscolar']);
 
     Route::patch('/estado/social/{matricula}/{estado}', [ServicioController::class, 'cambiarEst']);  
+    Route::patch('/cambio/estado/presentacion/{matricula}/{estado}', [FaseUnoController::class, 'cambiarEstado']); 
     Route::patch('/envia/comentario/social/{matricula}/{comentario}', [ServicioController::class, 'enviarComentarioSocial']);  
-    
+    Route::get('/obten/info/general/{matricula}', [ServicioController::class, 'infoGeneral']);
 
+
+    //faseUno
+    Route::patch('/envia/comentario/presentacion/{matricula}/{comentario}', [FaseUnoController::class, 'enviarComentarioPresentacion']);  
+    Route::patch('/envia/comentario/aceptacion/{matricula}/{comentario}', [FaseUnoController::class, 'enviarComentarioAceptacion']);  
+    Route::patch('/cambio/estado/aceptacion/{matricula}/{estado}', [FaseUnoController::class, 'cambiarEstadoAceptacionEscolar']); 
+
+    //foraneo
     Route::post('/foraneos', [ForaneoController::class, 'store']);
     Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
     Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
     Route::put('/foraneos/{id}', [ForaneoController::class, 'update']);
+    Route::get('/obten/info/foraneo/{matricula}', [ForaneoController::class, 'infoForaneo']);
 
-    Route::get('/obten/info/general/{matricula}', [ServicioController::class, 'infoGeneral']);
+
+   
+   
+
+
 });
 
 Route::middleware(['auth:sanctum', 'checkFacilitadorRole'])->group(function () {
@@ -317,6 +334,19 @@ Route::middleware(['auth:sanctum', 'checkEstudiantesRole'])->group(function () {
     Route::get('/comentario/social', [ServicioController::class,'obtenerComentarioSocial']);
     Route::put('/actualiza/info/social/{matricula}', [ServicioController::class, 'actualizaInfoSocial']);
     Route::get('/info/estado', [EstudiantesController::class, 'obtenerEstadoTramite']);
+
+    Route::get('/obten/info/general/propia/est', [ServicioController::class, 'infoGeneralPropia']);
+
+//Fase 1
+    Route::post('/subir', [FaseUnoController::class, 'storeFileSolicitud']);
+    Route::post('/subir/aceptacion', [FaseUnoController::class, 'storeFileAceptacion']);
+    
+    Route::patch('/estado/cambio/presentacion/carta/{valor}', [FaseUnoController::class, 'cambiarEstadoPresentacion']);
+    Route::patch('/estado/cambio/aceptacion/carta/{valor}', [FaseUnoController::class, 'cambiarEstadoAceptacion']);
+  
+   // Route::get('/obten/info/general/{matricula}', [ServicioController::class, 'infoGeneral']);
+
+
     //Route::get('/estudiantes/pertenece/prueba', [ClasesController::class, 'periodoDeEstudiantesPorClasesPrueba']);
 });
 
