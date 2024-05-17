@@ -7,6 +7,10 @@ use App\Models\Consejeros;
 use App\Models\cuc_carrera;
 use App\Models\Estudiantes;
 use App\Models\FaseUno;
+use App\Models\FaseDos;
+use App\Models\FaseTres;
+use App\Models\FaseCuatro;
+use App\Models\FaseCinco;
 use App\Models\User;
 use App\Models\Cucs;
 use App\Models\Direcciones;
@@ -385,9 +389,15 @@ class ServicioController extends Controller
     ->firstOrFail();
 
 
-  $faseUno=FaseUno::where('id_servicio', $id_ser)->firstOrFail();
+  $faseUno=FaseUno::where('id_servicio', $id_ser)->first();
 
+   $faseDos=FaseDos::where('id_servicio', $id_ser)->first();
 
+   $faseTres=FaseTres::where('id_servicio', $id_ser)->first();
+
+   $faseCuatro=FaseCuatro::where('id_servicio', $id_ser)->first();
+
+   $faseCinco=FaseCinco::where('id_servicio', $id_ser)->first();
 
 
  // Combinar datos del servicio y del estudiante
@@ -398,6 +408,10 @@ class ServicioController extends Controller
         'cuc' =>$cuc,
         'consejero'=>$consejero,
         'faseUno'=>$faseUno,
+        'faseDos'=>$faseDos,
+        'faseTres'=>$faseTres,
+        'faseCuatro'=>$faseCuatro,
+        'faseCinco'=>$faseCinco,
     ];
 
             // Si se encuentra el servicio, devolver una respuesta exitosa
@@ -462,7 +476,12 @@ class ServicioController extends Controller
     ->firstOrFail();
 
 
-    $faseUno=FaseUno::where('id_servicio', $id_ser)->firstOrFail();
+    $faseUno=FaseUno::where('id_servicio', $id_ser)->first();
+    $faseDos=FaseDos::where('id_servicio', $id_ser)->first();
+    
+    $faseTres=FaseTres::where('id_servicio', $id_ser)->first();
+    $faseCuatro=FaseCuatro::where('id_servicio', $id_ser)->first();
+    $faseCinco=FaseCinco::where('id_servicio', $id_ser)->first();
 
  // Combinar datos del servicio y del estudiante
     $datosCombinados = [
@@ -472,6 +491,10 @@ class ServicioController extends Controller
         'cuc' =>$cuc,
         'consejero'=>$consejero,
         'faseUno'=>$faseUno,
+        'faseDos'=>$faseDos,
+        'faseTres'=>$faseTres,
+        'faseCuatro'=>$faseCuatro,
+        'faseCinco'=>$faseCinco,
     ];
 
             // Si se encuentra el servicio, devolver una respuesta exitosa

@@ -5,6 +5,10 @@ use App\Http\Controllers\CarrerasController;
 use App\Http\Controllers\CucsController;
 use App\Http\Controllers\EstudiantesController;
 use App\Http\Controllers\FaseUnoController;
+use App\Http\Controllers\FaseDosController;
+use App\Http\Controllers\FaseTresController;
+use App\Http\Controllers\FaseCuatroController;
+use App\Http\Controllers\FaseCincoController;
 use App\Http\Controllers\ForaneoController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\ConsejerosController;
@@ -273,6 +277,7 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::patch('/estado/social/{matricula}/{estado}', [ServicioController::class, 'cambiarEst']);  
     Route::patch('/cambio/estado/presentacion/{matricula}/{estado}', [FaseUnoController::class, 'cambiarEstado']); 
     Route::patch('/envia/comentario/social/{matricula}/{comentario}', [ServicioController::class, 'enviarComentarioSocial']);  
+
     Route::get('/obten/info/general/{matricula}', [ServicioController::class, 'infoGeneral']);
 
 
@@ -280,6 +285,27 @@ Route::middleware(['auth:sanctum', 'checkEscolarRole'])->group(function () {
     Route::patch('/envia/comentario/presentacion/{matricula}/{comentario}', [FaseUnoController::class, 'enviarComentarioPresentacion']);  
     Route::patch('/envia/comentario/aceptacion/{matricula}/{comentario}', [FaseUnoController::class, 'enviarComentarioAceptacion']);  
     Route::patch('/cambio/estado/aceptacion/{matricula}/{estado}', [FaseUnoController::class, 'cambiarEstadoAceptacionEscolar']); 
+
+//faseDos
+Route::patch('/cambio/estado/informe1/{matricula}/{estado}', [FaseDosController::class, 'cambiarEstatusInforme1']); 
+Route::patch('/envia/comentario/informe1/{matricula}/{comentario}', [FaseDosController::class, 'enviarComentarioInforme1']);  
+
+
+//faseTres
+Route::patch('/cambio/estado/informe2/{matricula}/{estado}', [FaseTresController::class, 'cambiarEstatusInforme2']); 
+Route::patch('/envia/comentario/informe2/{matricula}/{comentario}', [FaseTresController::class, 'enviarComentarioInforme2']);  
+
+
+//faseCuatro
+Route::patch('/cambio/estado/informe3/{matricula}/{estado}', [FaseCuatroController::class, 'cambiarEstatusInforme3']); 
+Route::patch('/envia/comentario/informe3/{matricula}/{comentario}', [FaseCuatroController::class, 'enviarComentarioInforme3']);  
+
+
+
+//faseCinco
+Route::patch('/cambio/estado/terminacion/{matricula}/{estado}', [FaseCincoController::class, 'cambiarEstatusTerminacion']); 
+Route::patch('/envia/comentario/terminacion/{matricula}/{comentario}', [FaseCincoController::class, 'enviarComentarioTerminacion']); 
+
 
     //foraneo
     Route::post('/foraneos', [ForaneoController::class, 'store']);
@@ -320,7 +346,9 @@ Route::middleware(['auth:sanctum', 'checkEstudiantesRole'])->group(function () {
     Route::put('/estudia/{id}', [EstudiantesController::class, 'actualizaInfo']);
     Route::get('/estado/envio',[EstudiantesController::class,'obtenerEnvio']);
     Route::patch('/estado/enviado', [EstudiantesController::class, 'enviadoEstatus']);   
+
     Route::post('/servicio', [ServicioController::class, 'store']);
+
     Route::get('/servicio/info', [ServicioController::class, 'infoServicio']);
 
     
@@ -346,12 +374,38 @@ Route::middleware(['auth:sanctum', 'checkEstudiantesRole'])->group(function () {
   
    // Route::get('/obten/info/general/{matricula}', [ServicioController::class, 'infoGeneral']);
 
-
+ //Fase 2
+ Route::post('/subir/doc/informe1', [FaseDosController::class, 'storeFileInformeUno']);
+ Route::patch('/estado/cambio/presentacion/informe1/{valor}', [FaseDosController::class, 'cambiarEstadoInforme1']);
+ Route::get('/archivo/informe/descarga/pdf/{nombreArchivo}', [FaseDosController::class, 'getInforme']);
     //Route::get('/estudiantes/pertenece/prueba', [ClasesController::class, 'periodoDeEstudiantesPorClasesPrueba']);
+
+
+     //Fase 3
+ Route::post('/subir/doc/informe2', [FaseTresController::class, 'storeFileInformeDos']);
+ Route::patch('/estado/cambio/presentacion/informe2/{valor}', [FaseTresController::class, 'cambiarEstadoInforme2']);
+ Route::get('/archivo/informe2/descarga/pdf/{nombreArchivo}', [FaseTresController::class, 'getInformeDos']);
+
+
+
+ //Fase 4
+ Route::post('/subir/doc/informe3', [FaseCuatroController::class, 'storeFileInformeTres']);
+ Route::patch('/estado/cambio/presentacion/informe3/{valor}', [FaseCuatroController::class, 'cambiarEstadoInforme3']);
+
+ Route::get('/archivo/informe3/descarga/pdf/{nombreArchivo}', [FaseCuatroController::class, 'getInformeTres']);
+
+
+
+//Fase 5
+Route::post('/subir/doc/terminacion', [FaseCincoController::class, 'storeFileTerminacion']);
+Route::patch('/estado/cambio/carta/terminacion/{valor}', [FaseCincoController::class, 'cambiarEstadoTerminacion']);
+
+Route::get('/archivo/informe3/descarga/pdf/{nombreArchivo}', [FaseCincoController::class, 'getCartaTerminacion']);
+
+
+
+
 });
-
-
-
 
 
 // Route::apiResource('cucs',CucsController::class);
