@@ -7,8 +7,6 @@ use App\Models\User;
 use App\Models\Servicio;
 use App\Models\Estudiantes;
 use App\Http\Responses\ApiResponses;
-
-use Illuminate\Support\Str; // Asegúrate de importar la clase Str
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -20,20 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FaseUnoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
 
      private $disk = "public";
-    public function loadView()
-    {
-      
-     $files = [];
-     
-
-        
-    }
 
     public function storeFileSolicitud(Request $request)
     {
