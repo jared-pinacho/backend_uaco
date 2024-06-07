@@ -18,7 +18,7 @@ class Anuncio extends Model
     protected $fillable = ['titulo', 'descripcion','fecha','matricula'];
 
     protected $casts = [
-        'id_anuncio' => 'anuncio'
+        'id_anuncio' => 'string'
     ];
 
    

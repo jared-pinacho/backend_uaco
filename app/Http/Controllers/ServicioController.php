@@ -6,6 +6,7 @@ use App\Http\Responses\ApiResponses;
 use App\Models\Consejeros;
 use App\Models\cuc_carrera;
 use App\Models\Estudiantes;
+use App\Models\FaseFinal;
 use App\Models\FaseUno;
 use App\Models\FaseDos;
 use App\Models\FaseTres;
@@ -399,6 +400,8 @@ class ServicioController extends Controller
 
    $faseCinco=FaseCinco::where('id_servicio', $id_ser)->first();
 
+   $faseFinal=FaseFinal::where('id_servicio', $id_ser)->first();
+
 
  // Combinar datos del servicio y del estudiante
     $datosCombinados = [
@@ -412,6 +415,7 @@ class ServicioController extends Controller
         'faseTres'=>$faseTres,
         'faseCuatro'=>$faseCuatro,
         'faseCinco'=>$faseCinco,
+        'faseFinal'=>$faseFinal,
     ];
 
             // Si se encuentra el servicio, devolver una respuesta exitosa
@@ -482,6 +486,7 @@ class ServicioController extends Controller
     $faseTres=FaseTres::where('id_servicio', $id_ser)->first();
     $faseCuatro=FaseCuatro::where('id_servicio', $id_ser)->first();
     $faseCinco=FaseCinco::where('id_servicio', $id_ser)->first();
+    $faseFinal=FaseFinal::where('id_servicio', $id_ser)->first();
 
  // Combinar datos del servicio y del estudiante
     $datosCombinados = [
@@ -495,6 +500,7 @@ class ServicioController extends Controller
         'faseTres'=>$faseTres,
         'faseCuatro'=>$faseCuatro,
         'faseCinco'=>$faseCinco,
+        'faseFinal'=>$faseFinal,
     ];
 
             // Si se encuentra el servicio, devolver una respuesta exitosa

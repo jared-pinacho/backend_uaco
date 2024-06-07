@@ -18,6 +18,7 @@ use App\Models\PueblosIndigenas;
 use App\Models\Nacionalidades;
 use App\Models\estadoDocumentacion;
 use App\Models\Grupos;
+use App\Models\Foraneo;
 use App\Models\Carreras;
 use Dotenv\Exception\ValidationException;
 use Exception;
@@ -1325,6 +1326,172 @@ class EstudiantesController extends Controller
             return ApiResponses::error('Error interno del servidor', 500);
         }
     }
+
+
+
+
+    public function numPrestadoresPorCuc()
+    {
+        try {
+            $usuarios = auth()->user();
+            $rol = $usuarios->rol->nombre;
+
+            if ($rol === 'consejero') {
+                // Obtener la clave_cuc del consejero
+                $claveCuc = $usuarios->consejero->clave_cuc;
+            } else if ($rol === 'escolar') {
+                $claveCuc = $usuarios->escolar->clave_cuc;
+                $matriculaEscolar=$usuarios->escolar->matricula;
+            }
+            $cuc = Cucs::findOrfail($claveCuc);
+            $numeroCuc = $cuc->numero;
+
+            $estudiantes = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])
+            ->where('servicio_estatus', 1)
+            ->get();
+
+
+            $totalEstudiantes = $estudiantes->count();
+
+            $totalMujeres = $estudiantes->where('sexo', 'M')->count();
+            $totalHombres = $estudiantes->where('sexo', 'H')->count();
+
+           
+            $totalEstudiantesLengua = $estudiantes->where('id_lenguaindigena', '!=', 1)->count();
+            $totalEstudiantesLenguaNinguno = $estudiantes->where('id_lenguaindigena', '=', 1)->count();
+            $totalEstudiantesPueblo = $estudiantes->where('id_puebloindigena', '!=', 1)->count();
+            $totalEstudiantesPuebloNinguno = $estudiantes->where('id_puebloindigena', '=', 1)->count();
+            $totalEstudiantesMexicanos = $estudiantes->where('id_nacionalidad', '=', 2)->count();
+            $totalEstudiantesNoMexicanos = $estudiantes->where('id_nacionalidad', '!=', 2)->count();
+
+            $totalEstudiantesDiscapacidad = $estudiantes->filter(function ($estudiantes) {
+                return strcasecmp($estudiantes->discapacidad, 'ninguno') !== 0;
+            })->count();
+            $totalEstudiantesDiscapacidadNinguna = $estudiantes->filter(function ($estudiantes) {
+                return strcasecmp($estudiantes->discapacidad, 'ninguno') == 0;
+            })->count();
+
+            $resultados = [];
+            // Obtener todas las carreras asociadas al CUC
+            $carreras = Carreras::whereHas('grupos', function ($query) use ($claveCuc) {
+                $query->where('clave_grupo', 'like', substr($claveCuc, 7, 9) . '%');
+            })->get();
+
+            foreach ($carreras as $carrera) {
+                // Obtener todos los grupos asociados a la carrera y al CUC
+                $grupos = Grupos::where('clave_carrera', $carrera->clave_carrera)
+                    ->where('clave_grupo', 'like', substr($claveCuc, 7, 9) . '%')
+                    ->get();
+                $totalEstudiantess = 0;
+                foreach ($grupos as $grupo) {
+                    // Obtener todos los estudiantes asociados al grupo
+                    $estudiantess = Estudiantes::where('clave_grupo', $grupo->clave_grupo)->get();
+                    // Sumar la cantidad de estudiantes en el grupo actual
+                    $totalEstudiantess += $estudiantess->count();
+                }
+                // Almacenar el resultado en el arreglo incluso si no hay estudiantes
+                $resultados[$carrera->nombre] = $totalEstudiantess;
+            }
+
+
+                //foraneos
+                $foraneos = Foraneo::where('CUC',$claveCuc)
+                ->get();
+                $totalForaneos = $foraneos->count();
+                $totalMujeresForaneos = $foraneos->where('sexo', 'M')->count();
+                $totalHombresForaneos = $foraneos->where('sexo', 'H')->count();
+
+                $foraneos1 = $foraneos->whereBetween('edad', [14, 21])->count();
+                $foraneos2 = $foraneos->whereBetween('edad', [22, 30])->count();
+                $foraneos3 = $foraneos->whereBetween('edad', [31, 100])->count();
+
+
+                //Servicios
+                $servicios = Servicio::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])
+                ->get();
+    
+                $externos = $servicios->where('modalidad', 'Externo')->count();
+                $internos = $servicios->where('modalidad', 'Interno')->count();
+
+            return ApiResponses::success('Numero de prestadores', 200, [
+                'total_estudiantes' => $totalEstudiantes,
+                'total_mujeres' => $totalMujeres,
+                'total_hombres' => $totalHombres,
+                'total_estudiantes_lengua' => $totalEstudiantesLengua,
+                'total_estudiantes_lengua_ninguno' => $totalEstudiantesLenguaNinguno,
+                'total_estudiantes_pueblo' => $totalEstudiantesPueblo,
+                'total_estudiantes_pueblo_ninguno' => $totalEstudiantesPuebloNinguno,
+                'total_estudiantes_mexicanos' => $totalEstudiantesMexicanos,
+                'total_estudiantes_no_mexicanos' => $totalEstudiantesNoMexicanos,
+                'total_estudiantes_discapacidad' => $totalEstudiantesDiscapacidad,
+                'total_estudiantes_discapacidad_ninguna' => $totalEstudiantesDiscapacidadNinguna,
+                'estudiantes_carrera' => $resultados,
+                'total_foraneos'=> $totalForaneos,
+                'mujeres_foraneos'=> $totalMujeresForaneos,
+                'hombres_foraneos'=> $totalHombresForaneos,
+                'foraneos1'=> $foraneos1,
+                'foraneos2'=> $foraneos2,
+                'foraneos3'=> $foraneos3,
+                'internos'=>$internos,
+                'externos'=>$externos,
+            ]);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('Error: ' . $ex->getMessage(), 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function totPrestadores()
+{
+    try {
+        $estudiantes = Estudiantes::where('servicio_estatus', 1)->get();      
+        $totalEstudiantes = $estudiantes->count();
+        $totalMujeres = $estudiantes->where('sexo', 'M')->count();
+        $totalHombres = $estudiantes->where('sexo', 'H')->count();
+
+        $totalEstudiantesMexicanos = $estudiantes->where('id_nacionalidad', '=', 2)->count();
+        $totalEstudiantesNoMexicanos = $estudiantes->where('id_nacionalidad', '!=', 2)->count();
+
+        // Foraneos
+        $foraneos = Foraneo::all();
+        $totalForaneos = $foraneos->count();
+        $totalMujeresForaneos = $foraneos->where('sexo', 'M')->count();
+        $totalHombresForaneos = $foraneos->where('sexo', 'H')->count();
+
+        $foraneos1 = $foraneos->whereBetween('edad', [14, 21])->count();
+        $foraneos2 = $foraneos->whereBetween('edad', [22, 30])->count();
+        $foraneos3 = $foraneos->whereBetween('edad', [31, 100])->count();
+
+        // Servicios
+        $servicios = Servicio::all();
+        $externos = $servicios->where('modalidad', 'Externo')->count();
+        $internos = $servicios->where('modalidad', 'Interno')->count();
+
+        return ApiResponses::success('Numero de Estudiantes', 200, [
+            'total_estudiantes' => $totalEstudiantes,
+            'total_mujeres' => $totalMujeres,
+            'total_hombres' => $totalHombres,
+            'total_estudiantes_mexicanos' => $totalEstudiantesMexicanos,
+            'total_estudiantes_no_mexicanos' => $totalEstudiantesNoMexicanos,
+            'total_foraneos' => $totalForaneos,
+            'mujeres_foraneos' => $totalMujeresForaneos,
+            'hombres_foraneos' => $totalHombresForaneos,
+            'foraneos1' => $foraneos1,
+            'foraneos2' => $foraneos2,
+            'foraneos3' => $foraneos3,
+            'internos' => $internos,
+            'externos' => $externos,
+        ]);
+    } catch (Exception $e) {
+        return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+    }
+}
+
+
+
 
 
 

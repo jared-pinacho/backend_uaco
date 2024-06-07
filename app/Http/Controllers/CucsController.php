@@ -653,4 +653,41 @@ class CucsController extends Controller
     }
 
 
+
+
+
+    public function estudiantesTramite(Request $request)
+    {
+        try {
+          
+            $estudiante = Estudiantes::where('estado_tramite', 'Constancia solicitada')
+    ->join('grupos', 'estudiantes.clave_grupo', '=', 'grupos.clave_grupo')
+    ->join('cuc_carrera', 'grupos.clave_carrera', '=', 'cuc_carrera.clave_carrera')
+    ->join('cucs', 'cuc_carrera.clave_cuc', '=', 'cucs.clave_cuc')
+
+    ->join('servicios', 'estudiantes.matricula', '=', 'servicios.matricula')
+    ->with(
+        'usuario.rol',
+        'grupo.carrera',
+        'direccion.colonia.cp',
+        'direccion.colonia.municipio.estado',
+        'tiposangre',
+        'lenguaindigena',
+        'puebloindigena',
+        'nacionalidad',
+        'estado',  
+    )
+    ->select('estudiantes.*', 'servicios.*','cucs.nombre as cuc_nombre') // Selecciona todas las columnas de ambas tablas
+    ->orderBy('estudiantes.updated_at', 'desc')
+    ->get();
+
+            return ApiResponses::success('Prestadores solicitados ', 200, $estudiante);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('No encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
 }

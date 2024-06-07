@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnuncioController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\CarrerasController;
 use App\Http\Controllers\CucsController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\FaseDosController;
 use App\Http\Controllers\FaseTresController;
 use App\Http\Controllers\FaseCuatroController;
 use App\Http\Controllers\FaseCincoController;
+use App\Http\Controllers\FaseFinalController;
 use App\Http\Controllers\ForaneoController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\ConsejerosController;
@@ -116,7 +118,7 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::get('/estudiante/{id}', [EstudiantesController::class, 'showEstudiante']);
     Route::get('/foraneo/{id}', [ForaneoController::class, 'show']);
     Route::get('/estudiantes/{id}', [EstudiantesController::class, 'show']);
-
+    Route::get('/anuncio/{id}', [AnuncioController::class, 'show']);
 
     Route::get('/periodos', [PeriodosController::class, 'index']);
     Route::get('/periodos/{id}', [PeriodosController::class, 'show']);
@@ -137,7 +139,6 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::get('/obc/estudiantes/estudiantess', [CucsController::class, 'estudiantesDeCUC']);
 
     
-
 
     Route::get('/obc/estudiantes/estudiantess/prestadores', [CucsController::class, 'estudiantesDeCUCServicio']);
     Route::get('/obc/estudiantes/estudiantess/candidatos', [CucsController::class, 'candidatosDeCUCServicio']);
@@ -188,6 +189,18 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::get('/coordinador/cuc/{claveCuc}/programas/total/numero', [CarrerasController::class,'totalCarrerasPorCucCoordinador']);
     Route::get('/coordinador/cuc/{claveCuc}/programa/{claveCarrera}/grupos/total/numero', [CarrerasController::class,'totalGruposPorCarreraPorCucCoordiandor']);
     Route::get('/coordinador/programa/estudiantes/total/numero', [EstudiantesController::class,'totalEstudiantesCarreras']);
+
+
+    
+    Route::get('/obc/estudiantes/estudiantess/prestadores/tramite', [CucsController::class, 'estudiantesTramite']);
+
+
+    //estadisticas escolares
+      //escolar
+      Route::get('/por-cuc/prestadores/total/numero', [EstudiantesController::class,'numPrestadoresPorCuc']);
+
+      //coordinador
+      Route::get('/cucs/prestadores/total/numero', [EstudiantesController::class,'totPrestadores']);
 });
 
 Route::middleware(['auth:sanctum', 'checkCoordinadorRole'])->group(function () {
@@ -206,6 +219,9 @@ Route::middleware(['auth:sanctum', 'checkCoordinadorRole'])->group(function () {
     Route::post('/materias', [MateriasController::class, 'store']);
     Route::delete('/materias/{id}', [MateriasController::class, 'destroy']);
     Route::put('/materias/{id}', [MateriasController::class, 'update']);
+
+
+
 });
 
 Route::middleware(['auth:sanctum', 'checkAdminRole'])->group(function () {
@@ -306,17 +322,24 @@ Route::patch('/envia/comentario/informe3/{matricula}/{comentario}', [FaseCuatroC
 Route::patch('/cambio/estado/terminacion/{matricula}/{estado}', [FaseCincoController::class, 'cambiarEstatusTerminacion']); 
 Route::patch('/envia/comentario/terminacion/{matricula}/{comentario}', [FaseCincoController::class, 'enviarComentarioTerminacion']); 
 
+//faseFinal
+Route::patch('/cambio/estado/recibo/{matricula}/{estado}', [FaseFinalController::class, 'cambiarEstatusRecibo']); 
+Route::patch('/envia/comentario/recibo/{matricula}/{comentario}', [FaseFinalController::class, 'enviarComentarioRecibo']); 
+
 
     //foraneo
     Route::post('/foraneos', [ForaneoController::class, 'store']);
     Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
-    Route::get('/obc/foraneos/cuc', [ForaneoController::class, 'foraneosDeCUC']);
+    Route::get('/obc/anuncios/cuc', [AnuncioController::class, 'anunciosDeCUC']);
     Route::put('/foraneos/{id}', [ForaneoController::class, 'update']);
     Route::get('/obten/info/foraneo/{matricula}', [ForaneoController::class, 'infoForaneo']);
 
+//Anuncio
 
+Route::post('/anuncios', [AnuncioController::class, 'store']);
    
-   
+Route::put('/anuncios/{id}', [AnuncioController::class, 'update']);
+Route::delete('/anuncios/{id}', [AnuncioController::class, 'destroy']);
 
 
 });
@@ -403,7 +426,15 @@ Route::patch('/estado/cambio/carta/terminacion/{valor}', [FaseCincoController::c
 Route::get('/archivo/informe3/descarga/pdf/{nombreArchivo}', [FaseCincoController::class, 'getCartaTerminacion']);
 
 
+//Fase final
+Route::post('/subir/doc/recibo', [FaseFinalController::class, 'storeFileRecibo']);
 
+Route::patch('/estado/cambio/carta/recibo/{valor}', [FaseFinalController::class, 'cambiarEstadoRecibo']);
+
+Route::get('/archivo/recibo/descarga/pdf/{nombreArchivo}', [FaseFinalController::class, 'getRecibo']);
+
+
+Route::get('/anuncios/Cuc', [AnuncioController::class, 'anuncios']);
 
 });
 
