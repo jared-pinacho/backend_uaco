@@ -30,7 +30,7 @@ return new class extends Migration
             $table->bigInteger('id_direccion')->unsigned();
             $table->string('clave_cuc',20);
             $table->bigInteger('id_nacionalidad')->unsigned();
-            $table->id();
+           
             $table->unsignedBigInteger('id')->nullable();
 
 
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->foreign('id_direccion')->references('id_direccion')->on('direcciones');
             $table->foreign('id_tiposangre')->references('id_tiposangre')->on('tipo_sangres');
             $table->foreign('id_nacionalidad')->references('id_nacionalidad')->on('nacionalidades');
-            $table->BigInteger('id')->unsigned();
+           
             $table->foreign('id')
             ->references('id')
             ->on('users')

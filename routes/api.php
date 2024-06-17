@@ -118,7 +118,7 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     Route::get('/estudiante/{id}', [EstudiantesController::class, 'showEstudiante']);
     Route::get('/foraneo/{id}', [ForaneoController::class, 'show']);
     Route::get('/estudiantes/{id}', [EstudiantesController::class, 'show']);
-    Route::get('/anuncio/{id}', [AnuncioController::class, 'show']);
+    
 
     Route::get('/periodos', [PeriodosController::class, 'index']);
     Route::get('/periodos/{id}', [PeriodosController::class, 'show']);
@@ -141,9 +141,19 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     
 
     Route::get('/obc/estudiantes/estudiantess/prestadores', [CucsController::class, 'estudiantesDeCUCServicio']);
+
     Route::get('/obc/estudiantes/estudiantess/candidatos', [CucsController::class, 'candidatosDeCUCServicio']);
+
+    //bajas
+     Route::get('/obc/estudiantes/estudiantess/prestadores/bajas', [CucsController::class, 'bajasDeCUCServicio']);
+
+
+
     Route::patch('obc/estudiantes/matricula/activar/{id}', [CucsController::class, 'activarServicio']);
     Route::patch('obc/estudiantes/matricula/cancelar/{id}', [CucsController::class, 'cancelarServicio']);
+
+   
+
     Route::patch('estudiante/estatus/revisado/{id}', [CucsController::class, 'revisadoEstatus']);
     Route::get('/estado/estudiante/envio/{id}',[EstudiantesController::class,'obtenerEnvioInfo']);
     Route::get('/estado/estudiante/servicio/{id}',[EstudiantesController::class,'obtenerServicioInfo']);
@@ -194,6 +204,7 @@ Route::middleware(['auth:sanctum', 'checkDefaultRole'])->group(function () {
     
     Route::get('/obc/estudiantes/estudiantess/prestadores/tramite', [CucsController::class, 'estudiantesTramite']);
 
+    Route::get('/obc/estudiantes/estudiantess/servicio/bajas', [CucsController::class, 'bajasGeneralServicio']);
 
     //estadisticas escolares
       //escolar
@@ -255,7 +266,7 @@ Route::middleware(['auth:sanctum', 'checkConsejeroRole'])->group(function () {
     Route::post('/facilitadores/desasociar-cuc/', [FacilitadoresController::class, 'eliminarAsociacionCuc']);
     // Route::get('/carreras/{claveCarrera}/cucs/grupos', [CarrerasController::class, 'pruebaGruposPorCarreraPorCuc']);
     // Route::get('/cucs/grupos/grupitos', [CucsController::class, 'pruebaGruposPorCuc']);
-    // Route::get('/cucs/carreras/carreritas', [CucsController::class, 'pruebaCarrerasPorCuc']);
+    Route::get('/cucs/carreras/carreritass', [CucsController::class, 'pruebaCarrerasPorCuc']);
     Route::get('/consejeros/cuc/especifico', [ConsejerosController::class, 'obtenerCucDeConsejero']);//para obtener la info de la cuc del consejero
     Route::get('/cuc/consejero/facilitadores', [CucsController::class, 'facilitadoresPorCucDeConsejero']); //para obtener facilitadores de la cuc del consejero
     
@@ -341,6 +352,9 @@ Route::post('/anuncios', [AnuncioController::class, 'store']);
 Route::put('/anuncios/{id}', [AnuncioController::class, 'update']);
 Route::delete('/anuncios/{id}', [AnuncioController::class, 'destroy']);
 
+Route::get('/anuncio/{id}', [AnuncioController::class, 'show']);
+
+Route::delete('obc/estudiantes/matricula/eliminar/{id}', [CucsController::class, 'eliminarServicio']);
 
 });
 

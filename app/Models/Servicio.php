@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Servicio extends Model
 {
     use HasFactory;
-   
+    use SoftDeletes;
 
     protected $table = 'servicios';
 

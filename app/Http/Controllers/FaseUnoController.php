@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\faseUno;
-use App\Models\User;
+use Carbon\Carbon;
 use App\Models\Servicio;
 use App\Models\Estudiantes;
 use App\Http\Responses\ApiResponses;
@@ -61,7 +61,9 @@ class FaseUnoController extends Controller
                             $faseuno->com_pres="";
                             $faseuno->come_acep="";
                             $faseuno->pres_estado=1;
+                            $estudiante->estatus_envio = 1;
                             $faseuno->save();
+                            $estudiante->save();
                         }
             
                         // Confirmar la transacción
@@ -220,6 +222,24 @@ public function cambiarEstadoPresentacion($estado)
         // Buscar la faseUno relacionada con el ID del servicio
         $faseUno = FaseUno::where('id_servicio', $id_servicio)->firstOrFail();
 
+
+        if($estado == 1){
+            $estudiante->estatus_envio = 1;
+            $estudiante->save();
+        }
+
+        
+        if(($estado == 2 || $estado ==3) &&  $faseUno->acep_estado==2){
+            $estudiante->estatus_envio = 2;
+            $estudiante->save();
+        }
+
+        if (($estado == 2 || $estado ==3) && ( $faseUno->acep_estado==3 || $faseUno->acep_estado==2 )) {
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();            
+             $estudiante->estatus_envio = 2;
+            $estudiante->save();
+          }
+
         // Actualizar el estado de la presentación
         $faseUno->pres_estado = $estado;
         $faseUno->save();
@@ -248,13 +268,30 @@ public function cambiarEstado($matricula, $estado)
             $faseUno->pres_estado = $estado;
           
 
-          if ($estado == 2 &&  $faseUno->acep_estado==2 ) {
+            if($estado == 1){
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+                $estudiante->estatus_envio = 1;
+                $estudiante->save();
+            }
+
+            
+
+          if ($estado == 2  && $faseUno->acep_estado==2 ) {
 
               $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
                $estudiante->estado_tramite = "Inicio de servicio";
+               $estudiante->estatus_envio = 2;
                 $estudiante->save();
             }
     
+            if (($estado == 2 || $estado ==3) && ( $faseUno->acep_estado==3 || $faseUno->acep_estado==2 )) {
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();            
+                 $estudiante->estatus_envio = 2;
+                $estudiante->save();
+              }
+
+
+
             $faseUno->save();
     
             return ApiResponses::success('Estatus se cambio', 200, $faseUno->pres_estado);
@@ -280,13 +317,29 @@ public function cambiarEstado($matricula, $estado)
             $faseUno->acep_estado = $estado;
           
 
-          if ($estado == 2 &&  $faseUno->pres_estado==2 ) {
+            if($estado == 1){
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+                $estudiante->estatus_envio = 1;
+                $estudiante->save();
+            }
+
+          if ( $estado == 2  &&  $faseUno->pres_estado==2 ) {
 
               $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
                $estudiante->estado_tramite = "Inicio de servicio";
+               $estudiante->estatus_envio = 2;
+               $estudiante->estado_tramite_updated_at = Carbon::now();
                $faseUno->estatus_envio=2;
                 $estudiante->save();
             }
+
+
+            if (($estado == 2 || $estado ==3) && ( $faseUno->pres_estado==3 || $faseUno->pres_estado==2 )) {
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();            
+                 $estudiante->estatus_envio = 2;
+                $estudiante->save();
+              }
+
     
             $faseUno->save();
     
@@ -398,13 +451,29 @@ $faseuno->save();
             $faseUno->acep_estado = $estado;
 
 
-            if ($estado == 2 &&  $faseUno->pres_estado==2 ) {
+
+            if($estado == 1){
+                $estudiante->estatus_envio = 1;
+                $estudiante->save();
+            }
+
+            if ($estado == 2  &&  $faseUno->pres_estado==2 ) {
 
                 $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
                  $estudiante->estado_tramite = "Inicio de servicio";
+                 $estudiante->estatus_envio = 2;
                  $faseUno->estatus_envio=2;
                   $estudiante->save();
               }
+
+
+              if (($estado == 2 || $estado ==3) && ( $faseUno->pres_estado==3 || $faseUno->pres_estado==2 )) {
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();            
+                 $estudiante->estatus_envio = 2;
+                $estudiante->save();
+              }
+
+
 
 
             $faseUno->save();

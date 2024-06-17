@@ -1,18 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Carbon\Carbon;
 use App\Http\Responses\ApiResponses;
 use App\Models\Estudiantes;
 use App\Models\Servicio;
 use App\Models\User;
 use App\Models\Cucs;
 use App\Models\cuc_carrera;
-use App\Models\CodigoPostal;
-use App\Models\Colonia;
 use App\Models\Direcciones;
-use App\Models\Estados;
-use App\Models\Municipios;
 use App\Models\LenguasIndigenas;
 use App\Models\PueblosIndigenas;
 use App\Models\Nacionalidades;
@@ -1124,6 +1120,7 @@ class EstudiantesController extends Controller
             $estudiante->estatus_envio = $estado;
             if ($estado == 2) {
                 $estudiante->estado_tramite = "Información personal";
+                $estudiante->estado_tramite_updated_at = Carbon::now();
             }
     
            
@@ -1406,12 +1403,34 @@ class EstudiantesController extends Controller
                 $foraneos3 = $foraneos->whereBetween('edad', [31, 100])->count();
 
 
+                $for_anio = Foraneo::where('CUC',$claveCuc)
+                ->select(DB::raw('YEAR(fecha_inicio) as year'), DB::raw('COUNT(*) as total'))
+                ->groupBy(DB::raw('YEAR(fecha_inicio)'))
+                ->orderBy('year')
+                ->get();
+
+                $labelsFor = $for_anio->pluck('year')->toArray();
+                $dataFor = $for_anio->pluck('total')->toArray();
+
+
                 //Servicios
                 $servicios = Servicio::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])
                 ->get();
     
                 $externos = $servicios->where('modalidad', 'Externo')->count();
                 $internos = $servicios->where('modalidad', 'Interno')->count();
+
+
+                $est_anio = Servicio::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])
+                ->select(DB::raw('YEAR(created_at) as year'), DB::raw('COUNT(*) as total'))
+                ->groupBy(DB::raw('YEAR(created_at)'))
+                ->orderBy('year')
+                ->get();
+
+                // Transforma estos datos al formato necesario para Chart.js
+                $labelsEst = $est_anio->pluck('year')->toArray();
+                $dataEst = $est_anio->pluck('total')->toArray();
+
 
             return ApiResponses::success('Numero de prestadores', 200, [
                 'total_estudiantes' => $totalEstudiantes,
@@ -1434,6 +1453,13 @@ class EstudiantesController extends Controller
                 'foraneos3'=> $foraneos3,
                 'internos'=>$internos,
                 'externos'=>$externos,
+                'label_estudiantes'=>$labelsEst,
+                'data_estudiantes'=>$dataEst,
+                'label_foraneos'=>$labelsFor,
+                'data_foraneos'=>$dataFor,
+                // 'est_anio'=>$est_anio,
+                // 'for_anio'=>$for_anio,
+
             ]);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('Error: ' . $ex->getMessage(), 404);
@@ -1461,14 +1487,33 @@ class EstudiantesController extends Controller
         $totalMujeresForaneos = $foraneos->where('sexo', 'M')->count();
         $totalHombresForaneos = $foraneos->where('sexo', 'H')->count();
 
-        $foraneos1 = $foraneos->whereBetween('edad', [14, 21])->count();
-        $foraneos2 = $foraneos->whereBetween('edad', [22, 30])->count();
-        $foraneos3 = $foraneos->whereBetween('edad', [31, 100])->count();
+        $for_anio = Foraneo::query()
+        ->select(DB::raw('YEAR(fecha_inicio) as year'), DB::raw('COUNT(*) as total'))
+        ->groupBy(DB::raw('YEAR(fecha_inicio)'))
+        ->orderBy('year')
+        ->get();
+
+        $labelsFor = $for_anio->pluck('year')->toArray();
+        $dataFor = $for_anio->pluck('total')->toArray();
+
+
 
         // Servicios
         $servicios = Servicio::all();
         $externos = $servicios->where('modalidad', 'Externo')->count();
         $internos = $servicios->where('modalidad', 'Interno')->count();
+
+        $est_anio = Servicio::query()
+        ->select(DB::raw('YEAR(created_at) as year'), DB::raw('COUNT(*) as total'))
+        ->groupBy(DB::raw('YEAR(created_at)'))
+        ->orderBy('year')
+        ->get();
+
+        // Transforma estos datos al formato necesario para Chart.js
+        $labelsEst = $est_anio->pluck('year')->toArray();
+        $dataEst = $est_anio->pluck('total')->toArray();
+
+
 
         return ApiResponses::success('Numero de Estudiantes', 200, [
             'total_estudiantes' => $totalEstudiantes,
@@ -1479,11 +1524,12 @@ class EstudiantesController extends Controller
             'total_foraneos' => $totalForaneos,
             'mujeres_foraneos' => $totalMujeresForaneos,
             'hombres_foraneos' => $totalHombresForaneos,
-            'foraneos1' => $foraneos1,
-            'foraneos2' => $foraneos2,
-            'foraneos3' => $foraneos3,
             'internos' => $internos,
             'externos' => $externos,
+            'label_estudiantes'=>$labelsEst,
+            'data_estudiantes'=>$dataEst,
+            'label_foraneos'=>$labelsFor,
+            'data_foraneos'=>$dataFor,
         ]);
     } catch (Exception $e) {
         return ApiResponses::error('Error: ' . $e->getMessage(), 500);

@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers;
 
-
-
 use App\Models\faseDos;
-use App\Models\User;
 use App\Models\Servicio;
 use App\Models\Estudiantes;
 use App\Http\Responses\ApiResponses;
-
-use Illuminate\Support\Str; // Asegúrate de importar la clase Str
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -19,8 +15,6 @@ use Illuminate\Support\Facades\Auth;
 use Dotenv\Exception\ValidationException;
 use Exception;
 use Symfony\Component\HttpFoundation\Response;
-
-
 
 
 class FaseDosController extends Controller
@@ -119,6 +113,19 @@ class FaseDosController extends Controller
         // Buscar la faseUno relacionada con el ID del servicio
         $faseDos = FaseDos::where('id_servicio', $id_servicio)->firstOrFail();
 
+
+        if($estado == 1){
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+            $estudiante->estatus_envio = 1;
+            $estudiante->save();
+        }
+
+        if($estado == 2 || $estado ==3){
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+            $estudiante->estatus_envio = 2;
+            $estudiante->save();
+        }
+
         // Actualizar el estado de la presentación
         $faseDos->estatus_envio = $estado;
         $faseDos->save();
@@ -158,19 +165,31 @@ public function cambiarEstatusInforme1($matricula, $estado)
             // $estudiante = Estudiantes::findOrFail($id);
            $servicio = Servicio::where('matricula', $matricula)->firstOrFail();
            $id_ser=$servicio->id_servicio;
-
+           $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
            $faseDos = FaseDos::where('id_servicio', $id_ser)->firstOrFail();
 
             $faseDos->estatus_envio = $estado;
           
 
-          if ($estado == 2 ) {
-
-              $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+          if ($estado == 2 ) {      
                $estudiante->estado_tramite = "Informe bimestral 1";
+               $estudiante->estatus_envio=2;
+               $estudiante->estado_tramite_updated_at = Carbon::now();
                 $estudiante->save();
             }
     
+            if ($estado ==3) {      
+               
+                $estudiante->estatus_envio=2;
+                $estudiante->estado_tramite_updated_at = Carbon::now();
+                 $estudiante->save();
+             }
+
+            if($estado == 1){
+                $estudiante->estatus_envio = 1;
+                $estudiante->save();
+            }
+
             $faseDos->save();
     
             return ApiResponses::success('Estatus se cambio', 200, $faseDos->estatus_envio);

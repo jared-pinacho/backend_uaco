@@ -41,6 +41,7 @@ return new class extends Migration
             $table->integer('estatus_envio')->default(0);
             $table->string('comentario',255)->nullable();
             $table->string('estado_tramite',150)->default("información personal");
+            $table->timestamp('estado_tramite_updated_at')->nullable();
             $table->foreign('estado_nacimiento')->references('id_estado')->on('estados');
             $table->foreign('id_direccion')->references('id_direccion')->on('direcciones');
             $table->foreign('id_tiposangre')->references('id_tiposangre')->on('tipo_sangres');

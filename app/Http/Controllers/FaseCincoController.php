@@ -4,16 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\faseCinco;
 use Illuminate\Http\Request;
-
-
-
-use App\Models\faseDos;
-use App\Models\User;
+use Carbon\Carbon;
 use App\Models\Servicio;
 use App\Models\Estudiantes;
 use App\Http\Responses\ApiResponses;
-
-use Illuminate\Support\Str; // Asegúrate de importar la clase Str
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -21,9 +15,6 @@ use Illuminate\Support\Facades\Auth;
 use Dotenv\Exception\ValidationException;
 use Exception;
 use Symfony\Component\HttpFoundation\Response;
-
-
-
 
 class FaseCincoController extends Controller
 {
@@ -97,8 +88,6 @@ class FaseCincoController extends Controller
     }
 
 
-
-
     public function cambiarEstadoTerminacion($estado)
     {
         try {
@@ -122,6 +111,17 @@ class FaseCincoController extends Controller
             // Buscar la faseUno relacionada con el ID del servicio
             $faseCinco = FaseCinco::where('id_servicio', $id_servicio)->firstOrFail();
     
+
+            if($estado == 1){  
+                $estudiante->estatus_envio = 1;
+                $estudiante->save();
+            }
+    
+            if($estado == 2 || $estado ==3){
+                $estudiante->estatus_envio = 2;
+                $estudiante->save();
+            }
+
             // Actualizar el estado de la presentación
             $faseCinco->estatus_envio = $estado;
             $faseCinco->save();
@@ -168,13 +168,28 @@ class FaseCincoController extends Controller
 
             $faseCinco->estatus_envio = $estado;
           
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
 
-          if ($estado == 2 ) {
+            if ($estado == 2 ) {         
+                $estudiante->estado_tramite = "Carta de terminación";
+                 $estudiante->estado_tramite_updated_at = Carbon::now();
+                 $estudiante->estatus_envio=2;
+                  $estudiante->save();
+              }
 
-              $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
-               $estudiante->estado_tramite = "Carta de terminación";
-                $estudiante->save();
-            }
+
+             if ($estado ==3) {      
+                 $estudiante->estatus_envio=2;
+                 $estudiante->estado_tramite_updated_at = Carbon::now();
+                  $estudiante->save();
+              }
+ 
+             if($estado == 1){
+                 $estudiante->estatus_envio = 1;
+                 $estudiante->save();
+             }
+
+
     
             $faseCinco->save();
     

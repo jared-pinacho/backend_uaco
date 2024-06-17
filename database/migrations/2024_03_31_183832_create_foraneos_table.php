@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('correo',40);
             $table->string('semestre',2);
             $table->string('discapacidad',60);
-            $table->string('lengua',40);
             $table->string('institucion',60);
             $table->string('matricula_escolar',20);
             $table->string('licenciatura',60);

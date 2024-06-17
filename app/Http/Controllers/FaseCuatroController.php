@@ -4,13 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\faseCuatro;
 use Illuminate\Http\Request;
-use App\Models\faseTres;
-use App\Models\faseDos;
-use App\Models\User;
+use Carbon\Carbon;
 use App\Models\Servicio;
 use App\Models\Estudiantes;
 use App\Http\Responses\ApiResponses;
-use Illuminate\Support\Str; // Asegúrate de importar la clase Str
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -116,6 +113,20 @@ class FaseCuatroController extends Controller
             // Buscar la faseUno relacionada con el ID del servicio
             $faseCuatro = FaseCuatro::where('id_servicio', $id_servicio)->firstOrFail();
     
+
+            if($estado == 1){
+              
+                $estudiante->estatus_envio = 1;
+                $estudiante->save();
+            }
+    
+            if($estado == 2 || $estado ==3){
+                
+                $estudiante->estatus_envio = 2;
+                $estudiante->save();
+            }
+
+
             // Actualizar el estado de la presentación
             $faseCuatro->estatus_envio = $estado;
             $faseCuatro->save();
@@ -162,12 +173,27 @@ class FaseCuatroController extends Controller
             $faseCuatro->estatus_envio = $estado;
           
 
-          if ($estado == 2 ) {
+            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
 
-              $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
-               $estudiante->estado_tramite = "Informe bimestral 3";
-                $estudiante->save();
-            }
+            if ($estado == 2 ) {         
+                 $estudiante->estado_tramite = "Informe bimestral 3";
+                 $estudiante->estado_tramite_updated_at = Carbon::now();
+                 $estudiante->estatus_envio=2;
+                  $estudiante->save();
+              }
+
+
+             if ($estado ==3) {      
+                 $estudiante->estatus_envio=2;
+                 $estudiante->estado_tramite_updated_at = Carbon::now();
+                  $estudiante->save();
+              }
+ 
+             if($estado == 1){
+                 $estudiante->estatus_envio = 1;
+                 $estudiante->save();
+             }
+
     
             $faseCuatro->save();
     

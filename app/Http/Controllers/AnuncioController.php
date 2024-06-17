@@ -18,6 +18,25 @@ use Illuminate\Support\Facades\Auth;
 
 class AnuncioController extends Controller
 {
+
+
+
+    public function show($id)
+    {
+        try {
+            $anuncio = Anuncio::where('id_anuncio', $id)->firstOrFail();
+    
+            return ApiResponses::success('Encontrado', 200, $anuncio);
+        } catch (ModelNotFoundException $e) {
+            return ApiResponses::error('Error: Anuncio no encontrado', 404);
+        } catch (Exception $e) {
+            // Handle general exceptions (e.g., database errors)
+            return ApiResponses::error('Error interno: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
     public function anunciosDeCUC(Request $request)
     {
         try {

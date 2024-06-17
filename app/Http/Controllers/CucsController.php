@@ -3,22 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Http\Responses\ApiResponses;
-use App\Models\CodigoPostal;
-use App\Models\Colonia;
 use App\Models\cuc_carrera;
 use App\Models\Cucs;
+use App\Models\FaseCinco;
+use App\Models\FaseCuatro;
+use App\Models\FaseDos;
+use App\Models\FaseFinal;
+use App\Models\FaseTres;
+use App\Models\FaseUno;
+use App\Models\Servicio;
 use App\Models\Direcciones;
-use App\Models\Estados;
 use App\Models\Estudiantes;
 use Dotenv\Exception\ValidationException;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Models\Grupos;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use App\Models\Municipios;
 use App\Models\Clases;
-
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CancelacionMailable;
+use App\Mail\ContactoMailable;
 class CucsController extends Controller
 {
     /**
@@ -592,8 +599,89 @@ class CucsController extends Controller
         } catch (Exception $e) {
             return ApiResponses::error('Error: ' . $e->getMessage(), 500);
         }
-
     }
+
+
+    public function bajasDeCUCServicio(Request $request)
+    {
+        try {
+            $usuarioEscolar = auth()->user();
+            $claveCucEscolar = $usuarioEscolar->escolar->clave_cuc;
+            $cuc = Cucs::findOrFail($claveCucEscolar);
+            $numeroCuc = $cuc->numero;
+            $fechaLimite = Carbon::now()->subDays(65);
+
+        $estudiantess = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])
+            ->where('servicio_estatus', true)
+            ->where(function ($query) use ($fechaLimite) {
+                $query->where('estado_tramite_updated_at', '<', $fechaLimite)
+                      ->orWhereNull('estado_tramite_updated_at');
+            })
+
+            ->with(
+                    'usuario.rol',
+                    'grupo.carrera',
+                    'direccion.colonia.cp',
+                    'direccion.colonia.municipio.estado',
+                    'tiposangre',
+                    'lenguaindigena',
+                    'puebloindigena',
+                    'nacionalidad',
+                    'estado'
+                )
+
+
+            ->get();
+    
+            $estudiantesTransformados = $estudiantess;
+    
+            return ApiResponses::success('Estudiantes en el cuc', 200, $estudiantesTransformados);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('No encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+    public function bajasGeneralServicio(Request $request)
+    {
+        try {
+            $estudiante = Estudiantes::where('estado_tramite', 'BAJA POR INCUMPLIMIENTO')
+            ->where('servicio_estatus',0)
+            ->join('grupos', 'estudiantes.clave_grupo', '=', 'grupos.clave_grupo')
+            ->join('cuc_carrera', 'grupos.clave_carrera', '=', 'cuc_carrera.clave_carrera')
+            ->join('cucs', 'cuc_carrera.clave_cuc', '=', 'cucs.clave_cuc')
+        
+            ->join('servicios', 'estudiantes.matricula', '=', 'servicios.matricula')
+            ->with(
+                'usuario.rol',
+                'grupo.carrera',
+                'direccion.colonia.cp',
+                'direccion.colonia.municipio.estado',
+                'tiposangre',
+                'lenguaindigena',
+                'puebloindigena',
+                'nacionalidad',
+                'estado',  
+                
+            )
+            ->select('estudiantes.*', 'servicios.*','cucs.nombre as cuc_nombre') // Selecciona todas las columnas de ambas tablas
+            ->orderBy('estudiantes.updated_at', 'desc')
+            ->get();
+        
+    
+    
+            return ApiResponses::success('Prestadores solicitados ', 200, $estudiante);
+        } catch (ModelNotFoundException $ex) {
+            return ApiResponses::error('No encontrado', 404);
+        } catch (Exception $e) {
+            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
 
 
 
@@ -604,9 +692,20 @@ class CucsController extends Controller
 
             $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
 
+            $id=$estudiante->id;
+            $user = User::findOrFail($id);
+            $correo = $user->email;
+
             $estudiante->servicio_estatus = true;
+            $estudiante->estado_tramite="Inicio";
+            $estudiante->estado_tramite_updated_at = Carbon::now();
             $estudiante->save();
     
+
+            Mail::to( $correo)
+                ->send(new ContactoMailable);
+
+
             return ApiResponses::success('Servicio Estatus actulizado', 200,$estudiante);
         } catch (ModelNotFoundException $ex) {
             return ApiResponses::error('Estudiante no encontrado', 404);
@@ -617,24 +716,69 @@ class CucsController extends Controller
 
 
 
-    public function cancelarServicio(Request $request, $matricula)
-    {
-        try {
+    public function cancelarServicio($matricula)
+{
+    try {
+        // Obtener el estudiante por matrícula o lanzar una excepción si no se encuentra
+        $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+        $id=$estudiante->id;
 
-            $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+        $user = User::findOrFail($id);
+        $correo = $user->email;
 
-            $estudiante->servicio_estatus = false;
-            $estudiante->save();
-    
-            return ApiResponses::success('Servicio Estatus actulizado', 200,$estudiante);
-        } catch (ModelNotFoundException $ex) {
-            return ApiResponses::error('Estudiante no encontrado', 404);
-        } catch (Exception $e) {
-            return ApiResponses::error('Error: ' . $e->getMessage(), 500);
-        }
+        // Actualizar el estado del estudiante
+        $estudiante->servicio_estatus = 0;
+        $estudiante->estado_tramite = "BAJA POR INCUMPLIMIENTO";
+        $estudiante->save();
+
+        
+         Mail::to( $correo)
+         ->send(new CancelacionMailable);
+
+        return ApiResponses::success('Servicio Estatus actualizado', 200, $estudiante);
+    } catch (ModelNotFoundException $ex) {
+        return ApiResponses::error('Estudiante no encontrado', 404);
+    } catch (Exception $e) {
+        return ApiResponses::error('Error: ' . $e->getMessage(), 500);
     }
+}
 
 
+
+public function eliminarServicio($matricula)
+{
+    try {
+       
+    // Obtener el servicio por matrícula
+    $servicio = Servicio::where('matricula', $matricula)->first();
+
+    // Verificar si el servicio existe
+    if ($servicio) {
+    $idservicio = $servicio->id_servicio; // Asegúrate de que esta propiedad exista
+
+        // Eliminar registros de todas las fases asociadas al servicio
+        FaseUno::where('id_servicio', $idservicio)->delete();
+        FaseDos::where('id_servicio', $idservicio)->delete();
+        FaseTres::where('id_servicio', $idservicio)->delete();
+        FaseCuatro::where('id_servicio', $idservicio)->delete();
+        FaseCinco::where('id_servicio', $idservicio)->delete();
+        FaseFinal::where('id_servicio', $idservicio)->delete();
+
+      //  Eliminar el registro del servicio
+        $servicio->delete();
+}
+
+        return ApiResponses::success('Servicio Estatus actualizado', 200);
+    } catch (ModelNotFoundException $ex) {
+        return ApiResponses::error('Estudiante no encontrado', 404);
+    } catch (Exception $e) {
+        return ApiResponses::error('Error: ' . $e->getMessage(), 500);
+    }
+}
+
+
+
+    
     public function revisadoEstatus( $matricula)
     {
         try {
@@ -676,6 +820,7 @@ class CucsController extends Controller
         'puebloindigena',
         'nacionalidad',
         'estado',  
+        
     )
     ->select('estudiantes.*', 'servicios.*','cucs.nombre as cuc_nombre') // Selecciona todas las columnas de ambas tablas
     ->orderBy('estudiantes.updated_at', 'desc')

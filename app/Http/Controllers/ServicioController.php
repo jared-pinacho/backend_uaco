@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Servicio;
+use Carbon\Carbon;
 
 class ServicioController extends Controller
 {
@@ -158,7 +159,9 @@ class ServicioController extends Controller
            $servicio = Servicio::where('matricula', $matricula)->firstOrFail();
 
             $servicio->estatus_envio = 1;
+            $estudiante->estatus_envio = 1;
             $servicio->save();
+            $estudiante->save();
     
             return ApiResponses::success('Estatus enviado ', 200, $servicio->estatus_envio);
         } catch (ModelNotFoundException $ex) {
@@ -181,12 +184,32 @@ class ServicioController extends Controller
 
             $servicio->estatus_envio = $estado;
 
-            if ($estado == 2) {
+
+            if($estado == 1){
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+                $estudiante->estatus_envio = 1;
+                $estudiante->save();
+            }
+
+
+
+            if ($estado == 2 ) {
 
                 $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
                 $estudiante->estado_tramite = "Información de servicio";
+                $estudiante->estatus_envio = 2;
+                $estudiante->estado_tramite_updated_at = Carbon::now();
                 $estudiante->save();
             }
+
+
+            if ($estado ==3) {
+                $estudiante = Estudiantes::where('matricula', $matricula)->firstOrFail();
+                $estudiante->estatus_envio = 2;
+                $estudiante->estado_tramite_updated_at = Carbon::now();
+                $estudiante->save();
+            }
+
     
             $servicio->save();
     
@@ -365,7 +388,7 @@ class ServicioController extends Controller
 
         $mat=$estudiante->clave_grupo;
 
-        
+        $matricula=$estudiante->matricula;
 
     $grupo=Grupos::where("clave_grupo",$mat)->firstOrFail();
     $clave_carrera=$grupo->clave_carrera;
@@ -416,6 +439,7 @@ class ServicioController extends Controller
         'faseCuatro'=>$faseCuatro,
         'faseCinco'=>$faseCinco,
         'faseFinal'=>$faseFinal,
+        'matricula'=>$matricula,
     ];
 
             // Si se encuentra el servicio, devolver una respuesta exitosa

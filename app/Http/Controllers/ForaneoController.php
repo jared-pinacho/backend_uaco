@@ -60,7 +60,7 @@ class ForaneoController extends Controller
                 'grado_tit' => 'required',
                 'resp_seg' => 'required',
                 'horas' => 'required',
-                'lengua_indigena' => 'required',
+                
                 
 
             ], );
@@ -105,6 +105,23 @@ class ForaneoController extends Controller
            $foraneo->CUC=$claveCuc;
            
            
+        //    if ($request->lengua_indigena === '2' && $lengua !== '') {
+        //     $l = LenguasIndigenas::where('nombre', $lengua)->first();
+
+        //     if (!$l) {
+        //         $nueva_lengua = new LenguasIndigenas();
+        //         $nueva_lengua->nombre = $request->otra_lengua;
+        //         $nueva_lengua->save();
+        //         $estudiante->lenguaindigena()->associate($nueva_lengua);
+        //     } else {
+        //         $estudiante->lenguaindigena()->associate($l);
+
+        //     } } else {
+        //         $estudiante->id_lenguaindigena = $request->lengua_indigena;
+        //     }
+
+
+
            if ($request->lengua_indigena === '2' && $lengua !== '') {
             $l = LenguasIndigenas::where('nombre', $lengua)->first();
 
@@ -212,7 +229,7 @@ class ForaneoController extends Controller
             $foraneo->apellido_materno = $request->apellido_materno;
             $foraneo->edad = $request->edad;
             $foraneo->sexo = $request->sexo;
-            $foraneo->telefono = $request->grado_tit;
+            $foraneo->telefono = $request->telefono;
             $foraneo->correo = $request->correo;
             $foraneo->semestre = $request->semestre;
             $foraneo->discapacidad = $request->discapacidad;
@@ -294,21 +311,18 @@ class ForaneoController extends Controller
      {
          try {
          
-            $foraneo=Foraneo::where('id_foraneo',$dato)->firstOrFail();
-$id_cuc=$foraneo->CUC;
-
-
-
-$cuc=Cucs::with(
+            $foraneo=Foraneo::where('id_foraneo',$dato)->first();
+            $id_cuc=$foraneo->CUC;
+              $cuc=Cucs::with(
         
-    'direccion.colonia.municipio.estado'
-)->where('clave_cuc',$id_cuc)->firstOrFail();
+            'direccion.colonia.municipio.estado'
+                )->where('clave_cuc',$id_cuc)->firstOrFail();
 
 
 
-$consejero= Consejeros::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono')
-->where('clave_cuc',$id_cuc)
-->firstOrFail();
+            $consejero= Consejeros::select('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo', 'telefono')
+            ->where('clave_cuc',$id_cuc)
+            ->firstOrFail();
 
 
 $datos = [
@@ -322,7 +336,7 @@ $datos = [
              // Si se encuentra el servicio, devolver una respuesta exitosa
              return ApiResponses::success('Servicio encontrado', 200, $datos);
          } catch (ModelNotFoundException $e) {
-             return ApiResponses::error('Estudiante no encontrado', 404);
+             return ApiResponses::error('Foraneo no encontrado', 404);
          } catch (Exception $e) {
              // Capturar cualquier otra excepción y devolver un error interno del servidor
              return ApiResponses::error('Error interno del servidor: ' . $e->getMessage(), 500);
