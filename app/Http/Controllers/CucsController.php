@@ -579,7 +579,7 @@ class CucsController extends Controller
             $cuc = Cucs::findOrfail($claveCucEscolar);
             $numeroCuc = $cuc->numero;
             $estudiantess = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = (?)", [$numeroCuc])
-                ->where('servicio_estatus', '=', false)
+                ->where('servicio_estatus', '=', 0)
                 ->with(
                     'usuario.rol',
                     'grupo.carrera',
@@ -612,7 +612,7 @@ class CucsController extends Controller
             $fechaLimite = Carbon::now()->subDays(65);
 
         $estudiantess = Estudiantes::whereRaw("SUBSTRING(matricula, 1, 2) = ?", [$numeroCuc])
-            ->where('servicio_estatus', true)
+            ->where('servicio_estatus', 1)
             ->where(function ($query) use ($fechaLimite) {
                 $query->where('estado_tramite_updated_at', '<', $fechaLimite)
                       ->orWhereNull('estado_tramite_updated_at');
@@ -648,7 +648,7 @@ class CucsController extends Controller
     {
         try {
             $estudiante = Estudiantes::where('estado_tramite', 'BAJA POR INCUMPLIMIENTO')
-            ->where('servicio_estatus',0)
+            ->where('servicio_estatus', false)
             ->join('grupos', 'estudiantes.clave_grupo', '=', 'grupos.clave_grupo')
             ->join('cuc_carrera', 'grupos.clave_carrera', '=', 'cuc_carrera.clave_carrera')
             ->join('cucs', 'cuc_carrera.clave_cuc', '=', 'cucs.clave_cuc')

@@ -150,8 +150,7 @@ public function store(Request $request)
     }
 
 
-    public function destroy($id)
-{
+    public function destroy($id)  {
     DB::beginTransaction();
     try {
         $anuncio = Anuncio::findOrFail($id);
