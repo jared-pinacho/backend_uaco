@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\faseCuatro;
+use App\Models\FaseCuatro;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\Servicio;

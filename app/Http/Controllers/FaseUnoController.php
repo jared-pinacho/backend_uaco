@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\faseUno;
+use App\Models\FaseUno;
 use Carbon\Carbon;
 use App\Models\Servicio;
 use App\Models\Estudiantes;

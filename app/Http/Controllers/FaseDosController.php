@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\faseDos;
+use App\Models\FaseDos;
 use App\Models\Servicio;
 use App\Models\Estudiantes;
 use App\Http\Responses\ApiResponses;
