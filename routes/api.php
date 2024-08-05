@@ -377,7 +377,7 @@ Route::middleware(['auth:sanctum', 'checkEstudiantesRole'])->group(function () {
     
     Route::get('/tipos', [TipoSangreController::class, 'regresaSangre']);
     Route::get('/lengua', [LenguasIndigenasController::class, 'regresaLengua']);
-    Route::get('/pueblos', [PueblosIndigenasController::class, 'regresaPueblo']);
+    Route::get('/pueblos', [PueblosIndigenasController::class, 'index']);
     Route::get('/cucscarreras', [CucsController::class, 'regresaCarrerasPorCuc']);//comparten escolares y consejeros
     Route::get('/nacionalidad', [NacionalidadesController::class,'regresaNacionalidades']);
     Route::put('/estudia/{id}', [EstudiantesController::class, 'actualizaInfo']);
